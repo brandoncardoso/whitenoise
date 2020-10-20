@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import androidx.appcompat.view.menu.ActionMenuItemView
 import androidx.core.view.size
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -16,6 +17,11 @@ import com.bcardoso.whitenoise.R
 class MainFragment : Fragment() {
     private val mActiveSounds = arrayListOf<String>("rain", "beach", "fire", "wind")
     private lateinit var mActiveSoundList : RecyclerView
+    private lateinit var mActiveSoundAdapter: ActiveSoundAdapter
+
+    companion object {
+        fun newInstance() = MainFragment()
+    }
 
     override fun onCreateView(inflater: LayoutInflater,
                               container: ViewGroup?,
@@ -27,14 +33,10 @@ class MainFragment : Fragment() {
 
         mActiveSoundList = view.findViewById<RecyclerView>(R.id.active_sound_list)
         mActiveSoundList.layoutManager = LinearLayoutManager(context)
-        val mActiveSoundAdapter = ActiveSoundAdapter(mActiveSounds)
+        mActiveSoundAdapter = ActiveSoundAdapter(mActiveSounds)
         mActiveSoundList.adapter = mActiveSoundAdapter
 
-        val addSoundButton = view.findViewById<Button>(R.id.add_sound_button)
+        val addSoundButton = view.findViewById<ActionMenuItemView>(R.id.add_sound_button)
         addSoundButton.setOnClickListener{ mActiveSoundAdapter.addSound("thunder") }
-    }
-
-    companion object {
-        fun newInstance() = MainFragment()
     }
 }
