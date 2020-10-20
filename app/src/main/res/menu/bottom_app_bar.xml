@@ -2,12 +2,12 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <item
+    <!--<item
         android:id="@+id/add_sound_button"
         android:icon="@drawable/ic_add_24dp"
         android:contentDescription="@string/add_more_sounds_description"
         app:showAsAction="always"
-        android:title="@string/add_more_sounds_title" />
+        android:title="@string/add_more_sounds_title" />-->
 
     <item
         android:id="@+id/set_sleep_time_button"

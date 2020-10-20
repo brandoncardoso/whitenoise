@@ -4,10 +4,10 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.Button
-import androidx.core.view.size
 import androidx.recyclerview.widget.RecyclerView
+import com.bcardoso.whitenoise.ui.main.Sound
 
-class ActiveSoundAdapter(private var mSounds: ArrayList<String>) :
+class ActiveSoundAdapter(private var mActiveSounds: MutableList<Sound>) :
         RecyclerView.Adapter<ActiveSoundViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ActiveSoundViewHolder {
@@ -16,24 +16,24 @@ class ActiveSoundAdapter(private var mSounds: ArrayList<String>) :
     }
 
     override fun onBindViewHolder(holder: ActiveSoundViewHolder, position: Int) {
-        holder.bind(mSounds[position])
+        holder.bind(mActiveSounds[position].name)
 
         holder.itemView.findViewById<Button>(R.id.active_sound_remove_button)
                 .setOnClickListener { removeSound(holder) }
     }
 
-    override fun getItemCount() = mSounds.size
+    override fun getItemCount() = mActiveSounds.size
 
-    public fun addSound(name : String) {
-        mSounds.add(name)
-        notifyItemInserted(mSounds.size)
+    public fun addSound(sound : Sound) {
+        mActiveSounds.add(sound)
+        notifyItemInserted(mActiveSounds.size)
     }
 
     private fun removeSound(holder : ActiveSoundViewHolder) {
         if (holder.adapterPosition >= 0) {
-            mSounds.removeAt(holder.adapterPosition)
+            mActiveSounds.removeAt(holder.adapterPosition)
             notifyItemRemoved(holder.adapterPosition)
-            notifyItemRangeChanged(holder.adapterPosition, mSounds.size)
+            notifyItemRangeChanged(holder.adapterPosition, itemCount)
         }
     }
 }

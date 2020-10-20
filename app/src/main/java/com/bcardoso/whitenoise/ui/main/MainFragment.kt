@@ -1,25 +1,34 @@
 package com.bcardoso.whitenoise.ui.main
 
-import android.content.Context
+import android.media.AudioAttributes
+import android.media.MediaPlayer
+import android.os.Build
 import android.os.Bundle
-import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import androidx.appcompat.view.menu.ActionMenuItemView
-import androidx.core.view.size
+import androidx.annotation.RequiresApi
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bcardoso.whitenoise.ActiveSoundAdapter
 import com.bcardoso.whitenoise.R
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+
+data class Sound(var name:String, var id: Int, var volume:Float = 0F) {
+    var streamId : Int? = null
+}
 
 class MainFragment : Fragment() {
-    private val mActiveSounds = arrayListOf<String>("rain", "beach", "fire", "wind")
-    private lateinit var mActiveSoundList : RecyclerView
+    private lateinit var mActiveSoundListView: RecyclerView
     private lateinit var mActiveSoundAdapter: ActiveSoundAdapter
+
+    private val mSounds = listOf<Sound>(
+            Sound("Rain", R.raw.rain, 0F),
+            Sound("Thunder", R.raw.thunder, 1F)
+    )
+    private val mActiveSounds = mutableListOf<Sound>()
+    private val mMediaPlayers = mutableListOf<MediaPlayer>()
 
     companion object {
         fun newInstance() = MainFragment()
@@ -30,26 +39,54 @@ class MainFragment : Fragment() {
                               savedInstanceState: Bundle?): View? =
         inflater.inflate(R.layout.main_fragment, container, false)
 
+    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        mActiveSoundList = view.findViewById<RecyclerView>(R.id.active_sound_list)
-        mActiveSoundList.layoutManager = LinearLayoutManager(context)
-        mActiveSoundAdapter = ActiveSoundAdapter(mActiveSounds)
-        mActiveSoundList.adapter = mActiveSoundAdapter
+        val audioAttributes = AudioAttributes.Builder()
+            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+            .setUsage(AudioAttributes.USAGE_MEDIA)
+            .build()
 
-        val addSoundButton =
-            view.findViewById<ActionMenuItemView>(R.id.add_sound_button)
-        addSoundButton.setOnClickListener{ openAddSoundDialog(view.context) }
+        mActiveSounds.addAll(mSounds)
+        mActiveSounds.forEach { activeSound ->
+            var mediaPlayer = MediaPlayer.create(context, activeSound.id, audioAttributes, 1)
+            mediaPlayer.setAudioAttributes(audioAttributes)
+            mediaPlayer.setVolume(activeSound.volume, activeSound.volume)
+            mMediaPlayers.add(mediaPlayer)
+
+        }
+
+        mActiveSoundListView = view.findViewById<RecyclerView>(R.id.active_sound_list)
+        mActiveSoundListView.layoutManager = LinearLayoutManager(context)
+        mActiveSoundAdapter = ActiveSoundAdapter(mActiveSounds)
+        mActiveSoundListView.adapter = mActiveSoundAdapter
+
+
+        var isPlaying = false
+        val playButton = view.findViewById<FloatingActionButton>(R.id.play_button)
+        playButton.setOnClickListener {
+            if (isPlaying) {
+                playButton.setImageResource(R.drawable.ic_baseline_play_arrow_24)
+                mMediaPlayers.forEach { mediaPlayer -> mediaPlayer.pause() }
+            } else {
+                playButton.setImageResource(R.drawable.ic_baseline_pause_24)
+                mMediaPlayers.forEach { mediaPlayer -> mediaPlayer.start() }
+            }
+            isPlaying = !isPlaying
+        }
+        //val addSoundButton = view.findViewById<ActionMenuItemView>(R.id.add_sound_button)
+        //addSoundButton.setOnClickListener{ openAddSoundDialog(view.context) }
     }
 
+    /*
     private fun openAddSoundDialog(context : Context) {
         val multiItems = arrayOf("thunder", "waves", "forest")
         val checkedItems = booleanArrayOf(true, false, false)
 
         MaterialAlertDialogBuilder(context)
             .setNeutralButton(resources.getString(R.string.cancel)) { _, _ -> }
-            .setPositiveButton(resources.getString(R.string.add)) { dialog, _ ->
+            .setPositiveButton(resources.getString(R.string.add)) { _, _ ->
                 checkedItems.forEachIndexed { index, checked ->
                     if (checked) {
                         mActiveSoundAdapter.addSound(multiItems[index])
@@ -58,5 +95,5 @@ class MainFragment : Fragment() {
             }
             .setMultiChoiceItems(multiItems, checkedItems) { _, _, _ -> }
             .show()
-    }
+    }*/
 }
