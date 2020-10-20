@@ -1,5 +1,6 @@
 package com.bcardoso.whitenoise.ui.main
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -13,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bcardoso.whitenoise.ActiveSoundAdapter
 import com.bcardoso.whitenoise.R
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class MainFragment : Fragment() {
     private val mActiveSounds = arrayListOf<String>("rain", "beach", "fire", "wind")
@@ -36,7 +38,25 @@ class MainFragment : Fragment() {
         mActiveSoundAdapter = ActiveSoundAdapter(mActiveSounds)
         mActiveSoundList.adapter = mActiveSoundAdapter
 
-        val addSoundButton = view.findViewById<ActionMenuItemView>(R.id.add_sound_button)
-        addSoundButton.setOnClickListener{ mActiveSoundAdapter.addSound("thunder") }
+        val addSoundButton =
+            view.findViewById<ActionMenuItemView>(R.id.add_sound_button)
+        addSoundButton.setOnClickListener{ openAddSoundDialog(view.context) }
+    }
+
+    private fun openAddSoundDialog(context : Context) {
+        val multiItems = arrayOf("thunder", "waves", "forest")
+        val checkedItems = booleanArrayOf(true, false, false)
+
+        MaterialAlertDialogBuilder(context)
+            .setNeutralButton(resources.getString(R.string.cancel)) { _, _ -> }
+            .setPositiveButton(resources.getString(R.string.add)) { dialog, _ ->
+                checkedItems.forEachIndexed { index, checked ->
+                    if (checked) {
+                        mActiveSoundAdapter.addSound(multiItems[index])
+                    }
+                }
+            }
+            .setMultiChoiceItems(multiItems, checkedItems) { _, _, _ -> }
+            .show()
     }
 }
