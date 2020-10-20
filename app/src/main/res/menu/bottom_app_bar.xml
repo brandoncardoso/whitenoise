@@ -1,10 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+
     <item
         android:id="@+id/add_sound_button"
         android:icon="@drawable/ic_add_24dp"
-        android:contentDescription="Add more sounds."
+        android:contentDescription="@string/add_more_sounds_description"
         app:showAsAction="always"
-        android:title="Add more sounds" />
+        android:title="@string/add_more_sounds_title" />
+
+    <item
+        android:id="@+id/set_sleep_time_button"
+        android:icon="@drawable/ic_baseline_timer_24"
+        android:contentDescription="@string/set_sleep_time_description"
+        app:showAsAction="always"
+        android:title="@string/set_sleep_time_title" />
+
+    <item
+        android:title="TIMER"
+        app:showAsAction="always" />
 </menu>
