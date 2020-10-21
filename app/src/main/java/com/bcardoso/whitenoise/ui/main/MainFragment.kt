@@ -49,6 +49,7 @@ class MainFragment : Fragment() {
             var mediaPlayer = MediaPlayer.create(context, sound.id, audioAttributes, 1)
             mediaPlayer.setAudioAttributes(audioAttributes)
             mediaPlayer.setVolume(sound.volume, sound.volume)
+            mediaPlayer.isLooping = true
             mActiveSounds.add(Pair(sound, mediaPlayer))
         }
 
