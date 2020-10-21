@@ -24,11 +24,10 @@ class MainFragment : Fragment() {
     private lateinit var mActiveSoundAdapter: ActiveSoundAdapter
 
     private val mSounds = listOf<Sound>(
-            Sound("Rain", R.raw.rain, 0F),
-            Sound("Thunder", R.raw.thunder, 1F)
+            Sound("Rain", R.raw.rain, .78F),
+            Sound("Thunder", R.raw.thunder, 0.1F)
     )
-    private val mActiveSounds = mutableListOf<Sound>()
-    private val mMediaPlayers = mutableListOf<MediaPlayer>()
+    private val mActiveSounds = mutableListOf<Pair<Sound, MediaPlayer>>()
 
     companion object {
         fun newInstance() = MainFragment()
@@ -48,13 +47,11 @@ class MainFragment : Fragment() {
             .setUsage(AudioAttributes.USAGE_MEDIA)
             .build()
 
-        mActiveSounds.addAll(mSounds)
-        mActiveSounds.forEach { activeSound ->
-            var mediaPlayer = MediaPlayer.create(context, activeSound.id, audioAttributes, 1)
+        mSounds.forEach { sound ->
+            var mediaPlayer = MediaPlayer.create(context, sound.id, audioAttributes, 1)
             mediaPlayer.setAudioAttributes(audioAttributes)
-            mediaPlayer.setVolume(activeSound.volume, activeSound.volume)
-            mMediaPlayers.add(mediaPlayer)
-
+            mediaPlayer.setVolume(sound.volume, sound.volume)
+            mActiveSounds.add(Pair(sound, mediaPlayer))
         }
 
         mActiveSoundListView = view.findViewById<RecyclerView>(R.id.active_sound_list)
@@ -62,16 +59,15 @@ class MainFragment : Fragment() {
         mActiveSoundAdapter = ActiveSoundAdapter(mActiveSounds)
         mActiveSoundListView.adapter = mActiveSoundAdapter
 
-
         var isPlaying = false
         val playButton = view.findViewById<FloatingActionButton>(R.id.play_button)
         playButton.setOnClickListener {
             if (isPlaying) {
                 playButton.setImageResource(R.drawable.ic_baseline_play_arrow_24)
-                mMediaPlayers.forEach { mediaPlayer -> mediaPlayer.pause() }
+                mActiveSounds.forEach { activeSound -> activeSound.second.pause() }
             } else {
                 playButton.setImageResource(R.drawable.ic_baseline_pause_24)
-                mMediaPlayers.forEach { mediaPlayer -> mediaPlayer.start() }
+                mActiveSounds.forEach { activeSound -> activeSound.second.start() }
             }
             isPlaying = !isPlaying
         }

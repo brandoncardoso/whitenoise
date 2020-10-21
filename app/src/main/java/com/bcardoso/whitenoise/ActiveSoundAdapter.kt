@@ -1,5 +1,6 @@
 package com.bcardoso.whitenoise
 
+import android.media.MediaPlayer
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -7,7 +8,7 @@ import android.widget.Button
 import androidx.recyclerview.widget.RecyclerView
 import com.bcardoso.whitenoise.ui.main.Sound
 
-class ActiveSoundAdapter(private var mActiveSounds: MutableList<Sound>) :
+class ActiveSoundAdapter(private var mActiveSounds: MutableList<Pair<Sound, MediaPlayer>>) :
         RecyclerView.Adapter<ActiveSoundViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ActiveSoundViewHolder {
@@ -16,13 +17,14 @@ class ActiveSoundAdapter(private var mActiveSounds: MutableList<Sound>) :
     }
 
     override fun onBindViewHolder(holder: ActiveSoundViewHolder, position: Int) {
-        holder.bind(mActiveSounds[position].name)
+        holder.bind(mActiveSounds[position])
 
         //holder.itemView.findViewById<Button>(R.id.active_sound_remove_button).setOnClickListener { removeSound(holder) }
     }
 
     override fun getItemCount() = mActiveSounds.size
 
+    /*
     public fun addSound(sound : Sound) {
         mActiveSounds.add(sound)
         notifyItemInserted(mActiveSounds.size)
@@ -35,4 +37,5 @@ class ActiveSoundAdapter(private var mActiveSounds: MutableList<Sound>) :
             notifyItemRangeChanged(holder.adapterPosition, itemCount)
         }
     }
+    */
 }
