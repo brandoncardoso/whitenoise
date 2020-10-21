@@ -15,9 +15,7 @@ import com.bcardoso.whitenoise.ActiveSoundAdapter
 import com.bcardoso.whitenoise.R
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
-data class Sound(var name:String, var id: Int, var volume:Float = 0F) {
-    var streamId : Int? = null
-}
+data class Sound(var name:String, var id: Int, var volume:Float = 0F)
 
 class MainFragment : Fragment() {
     private lateinit var mActiveSoundListView: RecyclerView
