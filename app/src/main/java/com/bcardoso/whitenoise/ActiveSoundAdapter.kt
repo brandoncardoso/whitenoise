@@ -18,8 +18,7 @@ class ActiveSoundAdapter(private var mActiveSounds: MutableList<Sound>) :
     override fun onBindViewHolder(holder: ActiveSoundViewHolder, position: Int) {
         holder.bind(mActiveSounds[position].name)
 
-        holder.itemView.findViewById<Button>(R.id.active_sound_remove_button)
-                .setOnClickListener { removeSound(holder) }
+        //holder.itemView.findViewById<Button>(R.id.active_sound_remove_button).setOnClickListener { removeSound(holder) }
     }
 
     override fun getItemCount() = mActiveSounds.size
