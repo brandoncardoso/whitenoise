@@ -4,6 +4,7 @@ import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,6 +19,9 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 data class Sound(var name:String, var id: Int, var volume:Float = 0F)
 
 class MainFragment : Fragment() {
+    var mIsPlaying = false
+    private lateinit var mPlayButton : FloatingActionButton
+
     private lateinit var mActiveSoundListView: RecyclerView
     private lateinit var mActiveSoundAdapter: ActiveSoundAdapter
 
@@ -58,20 +62,23 @@ class MainFragment : Fragment() {
         mActiveSoundAdapter = ActiveSoundAdapter(mActiveSounds)
         mActiveSoundListView.adapter = mActiveSoundAdapter
 
-        var isPlaying = false
-        val playButton = view.findViewById<FloatingActionButton>(R.id.play_button)
-        playButton.setOnClickListener {
-            if (isPlaying) {
-                playButton.setImageResource(R.drawable.ic_baseline_play_arrow_24)
-                mActiveSounds.forEach { activeSound -> activeSound.second.pause() }
-            } else {
-                playButton.setImageResource(R.drawable.ic_baseline_pause_24)
-                mActiveSounds.forEach { activeSound -> activeSound.second.start() }
-            }
-            isPlaying = !isPlaying
-        }
+        mPlayButton = view.findViewById(R.id.play_button)
+        mPlayButton.setOnClickListener(::toggleAllActiveSounds)
         //val addSoundButton = view.findViewById<ActionMenuItemView>(R.id.add_sound_button)
         //addSoundButton.setOnClickListener{ openAddSoundDialog(view.context) }
+    }
+
+    private fun startAllActiveSounds() { mActiveSounds.forEach { (_, mediaplayer) -> mediaplayer.start() } }
+    private fun pauseAllActiveSounds() { mActiveSounds.forEach { (_, mediaplayer) -> mediaplayer.pause() } }
+    private fun toggleAllActiveSounds(view: View) {
+        if (mIsPlaying) {
+            mPlayButton.setImageResource(R.drawable.ic_baseline_play_arrow_24)
+            pauseAllActiveSounds()
+        } else {
+            mPlayButton.setImageResource(R.drawable.ic_baseline_pause_24)
+            startAllActiveSounds()
+        }
+        mIsPlaying = !mIsPlaying
     }
 
     /*

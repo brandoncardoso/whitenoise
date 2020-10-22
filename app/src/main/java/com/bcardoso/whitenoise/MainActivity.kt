@@ -10,8 +10,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bcardoso.whitenoise.ui.main.MainFragment
 
 class MainActivity : AppCompatActivity() {
-    private val activeSounds : ArrayList<String> = ArrayList()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
@@ -22,5 +20,4 @@ class MainActivity : AppCompatActivity() {
                     .commitNow()
         }
     }
-
 }

@@ -7,4 +7,6 @@
     <string name="add_more_sounds_title">Add more sounds</string>
     <string name="set_sleep_time_description">Set how long do you want the sounds to play.</string>
     <string name="set_sleep_time_title">Sleep Timer</string>
+    <string name="channel_name">whitenoise</string>
+    <string name="channel_description">whitenoise app notification channel</string>
 </resources>
