@@ -12,8 +12,6 @@ import com.bcardoso.whitenoise.ui.main.Sound
 
 class ActiveSoundViewHolder(inflater: LayoutInflater, parent: ViewGroup) :
         RecyclerView.ViewHolder(inflater.inflate(R.layout.active_sound_list_item, parent, false)) {
-    private val MAX_VOLUME = 100
-
     private var mNameView : TextView = itemView.findViewById(R.id.active_sound_list_item_name)
     private var mVolumeControl : SeekBar = itemView.findViewById(R.id.active_sound_list_item_volume)
 

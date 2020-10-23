@@ -2,13 +2,10 @@ package com.bcardoso.whitenoise.ui.main
 
 import android.media.AudioAttributes
 import android.media.MediaPlayer
-import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -19,13 +16,13 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 data class Sound(var name:String, var id: Int, var volume:Float = 0F)
 
 class MainFragment : Fragment() {
-    var mIsPlaying = false
+    private var mIsPlaying = false
     private lateinit var mPlayButton : FloatingActionButton
 
     private lateinit var mActiveSoundListView: RecyclerView
     private lateinit var mActiveSoundAdapter: ActiveSoundAdapter
 
-    private val mSounds = listOf<Sound>(
+    private val mSounds = listOf(
             Sound("Rain", R.raw.rain, .78F),
             Sound("Thunder", R.raw.thunder, 0.1F)
     )
@@ -35,12 +32,10 @@ class MainFragment : Fragment() {
         fun newInstance() = MainFragment()
     }
 
-    override fun onCreateView(inflater: LayoutInflater,
-                              container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? =
-        inflater.inflate(R.layout.main_fragment, container, false)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        return inflater.inflate(R.layout.main_fragment, container, false)
+    }
 
-    @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -50,14 +45,14 @@ class MainFragment : Fragment() {
             .build()
 
         mSounds.forEach { sound ->
-            var mediaPlayer = MediaPlayer.create(context, sound.id, audioAttributes, 1)
+            val mediaPlayer = MediaPlayer.create(context, sound.id, audioAttributes, 1)
             mediaPlayer.setAudioAttributes(audioAttributes)
             mediaPlayer.setVolume(sound.volume, sound.volume)
             mediaPlayer.isLooping = true
             mActiveSounds.add(Pair(sound, mediaPlayer))
         }
 
-        mActiveSoundListView = view.findViewById<RecyclerView>(R.id.active_sound_list)
+        mActiveSoundListView = view.findViewById(R.id.active_sound_list)
         mActiveSoundListView.layoutManager = LinearLayoutManager(context)
         mActiveSoundAdapter = ActiveSoundAdapter(mActiveSounds)
         mActiveSoundListView.adapter = mActiveSoundAdapter
@@ -68,8 +63,8 @@ class MainFragment : Fragment() {
         //addSoundButton.setOnClickListener{ openAddSoundDialog(view.context) }
     }
 
-    private fun startAllActiveSounds() { mActiveSounds.forEach { (_, mediaplayer) -> mediaplayer.start() } }
-    private fun pauseAllActiveSounds() { mActiveSounds.forEach { (_, mediaplayer) -> mediaplayer.pause() } }
+    private fun startAllActiveSounds() { mActiveSounds.forEach { (_, mp) -> mp.start() } }
+    private fun pauseAllActiveSounds() { mActiveSounds.forEach { (_, mp) -> mp.pause() } }
     private fun toggleAllActiveSounds(view: View) {
         if (mIsPlaying) {
             mPlayButton.setImageResource(R.drawable.ic_baseline_play_arrow_24)
@@ -80,6 +75,7 @@ class MainFragment : Fragment() {
         }
         mIsPlaying = !mIsPlaying
     }
+
 
     /*
     private fun openAddSoundDialog(context : Context) {
