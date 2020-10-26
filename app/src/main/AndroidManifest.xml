@@ -11,10 +11,12 @@
         android:theme="@style/Theme.Whitenoise">
         <activity
             android:name=".WhiteNoiseActivity"
-            android:label="@string/app_name">
+            android:label="@string/app_name"
+            android:launchMode="singleInstance">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
+                <action android:name="com.bcardoso.whitenoise.action.PLAY_TOGGLE" />
             </intent-filter>
         </activity>
     </application>
