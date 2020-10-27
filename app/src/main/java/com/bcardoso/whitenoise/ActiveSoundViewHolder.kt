@@ -22,12 +22,13 @@ class ActiveSoundViewHolder(inflater: LayoutInflater, parent: ViewGroup) :
 
         mNameView.text = sound.name
         mVolumeControl.progress = (sound.volume * 100).toInt()
-        mVolumeControl.setOnSeekBarChangeListener(VolumeControlChangeListener(mediaPlayer))
+        mVolumeControl.setOnSeekBarChangeListener(VolumeControlChangeListener(sound, mediaPlayer))
     }
 
-    private class VolumeControlChangeListener(val mediaPlayer: MediaPlayer) : OnSeekBarChangeListener {
+    private class VolumeControlChangeListener(val sound: Sound, val mediaPlayer: MediaPlayer) : OnSeekBarChangeListener {
         override fun onProgressChanged(seekbar: SeekBar?, progress: Int, fromUser: Boolean) {
             val newVolume = progress / 100.0F
+            sound.volume = newVolume
             mediaPlayer.setVolume(newVolume, newVolume)
         }
 
