@@ -1,14 +1,12 @@
 package com.bcardoso.whitenoise
 
 import android.media.MediaPlayer
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.bcardoso.whitenoise.ui.main.Sound
 
 class ActiveSoundViewHolder(inflater: LayoutInflater, parent: ViewGroup) :
         RecyclerView.ViewHolder(inflater.inflate(R.layout.active_sound_list_item, parent, false)) {

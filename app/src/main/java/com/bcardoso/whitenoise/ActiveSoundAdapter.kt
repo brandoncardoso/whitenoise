@@ -1,12 +1,9 @@
 package com.bcardoso.whitenoise
 
 import android.media.MediaPlayer
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.widget.Button
 import androidx.recyclerview.widget.RecyclerView
-import com.bcardoso.whitenoise.ui.main.Sound
 
 class ActiveSoundAdapter(private var mActiveSounds: MutableList<Pair<Sound, MediaPlayer>>) :
         RecyclerView.Adapter<ActiveSoundViewHolder>() {

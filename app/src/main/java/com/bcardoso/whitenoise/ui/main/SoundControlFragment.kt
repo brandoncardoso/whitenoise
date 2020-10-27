@@ -13,8 +13,6 @@ import com.bcardoso.whitenoise.R
 import com.bcardoso.whitenoise.SoundControlInterface
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
-data class Sound(var name:String, var id: Int, var volume:Float = 0F)
-
 class SoundControlFragment : Fragment() {
     private lateinit var mContext: Context
 

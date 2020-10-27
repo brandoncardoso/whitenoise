@@ -14,10 +14,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.bcardoso.whitenoise.ui.main.SoundControlFragment
-import com.bcardoso.whitenoise.ui.main.Sound
+
+data class Sound(var name:String, var id: Int, var initialVolume:Float = 0F) {
+    var volume = initialVolume
+}
 
 class WhiteNoiseActivity : AppCompatActivity(), SoundControlInterface {
-    val NOTIFICATION_CHANNEL_ID = "whitenoise"
+    private val NOTIFICATION_CHANNEL_ID = "whitenoise"
     private lateinit var mNotificationManagerCompat : NotificationManagerCompat
 
     private var mIsPlaying = false
