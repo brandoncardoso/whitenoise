@@ -13,7 +13,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import com.bcardoso.whitenoise.ui.main.MainFragment
+import com.bcardoso.whitenoise.ui.main.SoundControlFragment
 import com.bcardoso.whitenoise.ui.main.Sound
 
 class WhiteNoiseActivity : AppCompatActivity(), SoundControlInterface {
@@ -33,11 +33,11 @@ class WhiteNoiseActivity : AppCompatActivity(), SoundControlInterface {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.main_activity)
+        setContentView(R.layout.`white_noise_activity`)
 
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
-                    .replace(R.id.container, MainFragment.newInstance())
+                    .replace(R.id.container, SoundControlFragment.newInstance())
                     .commitNow()
         }
 
@@ -134,7 +134,6 @@ class WhiteNoiseActivity : AppCompatActivity(), SoundControlInterface {
         when(intent?.action) {
             ACTION.PLAY_TOGGLE.id -> {
                 togglePlayPause()
-                generateNotification()
             }
         }
     }

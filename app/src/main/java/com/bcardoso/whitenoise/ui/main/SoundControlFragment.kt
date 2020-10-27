@@ -15,7 +15,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 data class Sound(var name:String, var id: Int, var volume:Float = 0F)
 
-class MainFragment : Fragment() {
+class SoundControlFragment : Fragment() {
     private lateinit var mContext: Context
 
     private lateinit var mPlayButton : FloatingActionButton
@@ -25,11 +25,11 @@ class MainFragment : Fragment() {
     private lateinit var mListener: SoundControlInterface
 
     companion object {
-        fun newInstance() = MainFragment()
+        fun newInstance() = SoundControlFragment()
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.main_fragment, container, false)
+        return inflater.inflate(R.layout.sound_control_fragment, container, false)
     }
 
     override fun onAttach(context: Context) {
