@@ -154,6 +154,13 @@ class WhiteNoiseActivity : AppCompatActivity(), SoundControlInterface {
         }
         mIsPlaying = !mIsPlaying
         generateNotification()
+        updateSoundControlFragment()
         return mIsPlaying
+    }
+
+    override fun updateSoundControlFragment() {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.container, SoundControlFragment())
+            .commitNow()
     }
 }
