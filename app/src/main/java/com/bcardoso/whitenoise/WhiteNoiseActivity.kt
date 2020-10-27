@@ -4,12 +4,15 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -29,9 +32,18 @@ class WhiteNoiseActivity : AppCompatActivity(), SoundControlInterface {
         Sound("Rain", R.raw.rain, .78F),
         Sound("Thunder", R.raw.thunder, 0.1F)
     )
-
     enum class ACTION(val id:String) {
         PLAY_TOGGLE("com.bcardoso.whitenoise.action.PLAY_TOGGLE")
+    }
+
+    private val receiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            when(intent?.action) {
+                ACTION.PLAY_TOGGLE.id -> {
+                    togglePlayPause()
+                }
+            }
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -60,6 +72,7 @@ class WhiteNoiseActivity : AppCompatActivity(), SoundControlInterface {
             mActiveSounds.add(Pair(sound, mediaPlayer))
         }
 
+        registerReceiver(receiver, IntentFilter(ACTION.PLAY_TOGGLE.id))
         generateNotification()
     }
 
@@ -100,13 +113,10 @@ class WhiteNoiseActivity : AppCompatActivity(), SoundControlInterface {
             notifyIntent,
             PendingIntent.FLAG_UPDATE_CURRENT)
 
-        val playToggleIntent = Intent(this, WhiteNoiseActivity::class.java).apply {
-            action = ACTION.PLAY_TOGGLE.id
-        }
-        val playTogglePendingIntent = PendingIntent.getActivity(
+        val playTogglePendingIntent = PendingIntent.getBroadcast(
             this,
             System.currentTimeMillis().toInt(),
-            playToggleIntent,
+            Intent(ACTION.PLAY_TOGGLE.id),
             0)
         val playToggleAction = NotificationCompat.Action.Builder(
             if (mIsPlaying) R.drawable.ic_baseline_pause_24 else R.drawable.ic_baseline_play_arrow_24,
@@ -130,15 +140,6 @@ class WhiteNoiseActivity : AppCompatActivity(), SoundControlInterface {
             .build()
 
         notifyNotificationManager(0, notification)
-    }
-
-    override fun onNewIntent(intent: Intent?) {
-        super.onNewIntent(intent)
-        when(intent?.action) {
-            ACTION.PLAY_TOGGLE.id -> {
-                togglePlayPause()
-            }
-        }
     }
 
     override fun isPlaying(): Boolean {
