@@ -10,13 +10,14 @@
         android:title="@string/add_more_sounds_title" />-->
 
     <item
-        android:id="@+id/set_sleep_time_button"
+        android:id="@+id/mi_set_timer"
         android:icon="@drawable/ic_baseline_timer_24"
         android:contentDescription="@string/set_sleep_time_description"
         app:showAsAction="always"
         android:title="@string/set_sleep_time_title" />
 
     <item
+        android:id="@+id/mi_time_remaining"
         android:title="TIMER"
         app:showAsAction="always" />
 </menu>

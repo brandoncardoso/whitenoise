@@ -1,10 +1,14 @@
 package com.bcardoso.whitenoise.ui.main
 
 import android.content.Context
+import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.view.menu.ActionMenuItemView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -19,6 +23,8 @@ class SoundControlFragment : Fragment() {
     private lateinit var mPlayButton : FloatingActionButton
     private lateinit var mActiveSoundListView: RecyclerView
     private lateinit var mActiveSoundAdapter: ActiveSoundAdapter
+
+    private lateinit var timerButton : ActionMenuItemView
 
     private lateinit var mListener: SoundControlInterface
 
@@ -50,9 +56,28 @@ class SoundControlFragment : Fragment() {
             val isPlaying = mListener.togglePlayPause()
             updatePlayButtonImage(isPlaying)
         }
+
+        timerButton = view.findViewById(R.id.mi_set_timer)
+        timerButton.setOnClickListener(::openSetTimeDialog)
         //val addSoundButton = view.findViewById<ActionMenuItemView>(R.id.add_sound_button)
         //addSoundButton.setOnClickListener{ openAddSoundDialog(view.context) }
     }
+
+    private fun openSetTimeDialog(view: View) {
+        val dialogBuilder = AlertDialog.Builder(view.context)
+        val inflater = requireActivity().layoutInflater;
+
+        dialogBuilder
+            .setView(inflater.inflate(R.layout.timer_dialog, null))
+            .setCancelable(true)
+            .setPositiveButton("Proceed") { dialog, id -> dialog.dismiss() }
+            .setNegativeButton("Cancel") { dialog, id -> dialog.cancel() }
+
+        val alert = dialogBuilder.create()
+        alert.setTitle("Stop sounds in...")
+        alert.show()
+    }
+
     private fun updatePlayButtonImage(isPlaying: Boolean) {
         if (isPlaying) {
             mPlayButton.setImageResource(R.drawable.ic_baseline_pause_24)
