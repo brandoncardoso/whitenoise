@@ -18,6 +18,7 @@
 
     <item
         android:id="@+id/mi_time_remaining"
-        android:title="TIMER"
-        app:showAsAction="always" />
+        app:showAsAction="always"
+        android:enabled="false"
+        android:title="" />
 </menu>

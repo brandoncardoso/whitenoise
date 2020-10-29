@@ -7,4 +7,5 @@ interface SoundControlInterface {
     fun getActiveSounds() : MutableList<Pair<Sound, MediaPlayer>>
     fun togglePlayPause() : Boolean
     fun updateSoundControlFragment()
+    fun pauseAllSounds()
 }

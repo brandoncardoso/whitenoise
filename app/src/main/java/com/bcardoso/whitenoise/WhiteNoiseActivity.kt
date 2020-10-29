@@ -78,6 +78,7 @@ class WhiteNoiseActivity : AppCompatActivity(), SoundControlInterface {
 
     private fun startAllActiveSounds() { mActiveSounds.forEach { (_, mp) -> mp.start() } }
     private fun pauseAllActiveSounds() { mActiveSounds.forEach { (_, mp) -> mp.pause() } }
+    private fun stopAllActiveSounds() { mActiveSounds.forEach { (_, mp) -> mp.stop() }}
 
     private fun createNotificationChannel() {
         // Create the NotificationChannel, but only on API 26+ because
@@ -166,5 +167,12 @@ class WhiteNoiseActivity : AppCompatActivity(), SoundControlInterface {
         supportFragmentManager.beginTransaction()
             .replace(R.id.container, SoundControlFragment())
             .commitNow()
+    }
+
+    override fun pauseAllSounds() {
+        pauseAllActiveSounds()
+        mIsPlaying = false
+        generateNotification()
+        updateSoundControlFragment()
     }
 }
