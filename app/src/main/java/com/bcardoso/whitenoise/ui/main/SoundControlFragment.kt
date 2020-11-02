@@ -137,6 +137,11 @@ class SoundControlFragment : Fragment() {
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        if (this::countDownTimer.isInitialized) countDownTimer.cancel()
+    }
+
     /*
     private fun openAddSoundDialog(context : Context) {
         val multiItems = arrayOf("thunder", "waves", "forest")
