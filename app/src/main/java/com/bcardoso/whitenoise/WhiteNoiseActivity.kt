@@ -164,8 +164,13 @@ class WhiteNoiseActivity : AppCompatActivity(), SoundControlInterface {
     }
 
     override fun updateSoundControlFragment() {
+        val curFrag = supportFragmentManager.findFragmentById(R.id.container) as SoundControlFragment
+        val newFrag = SoundControlFragment()
+        newFrag.arguments = Bundle().apply {
+            curFrag.getTimeRemaining()?.let { putLong(curFrag.TIME_REMAINING_KEY, it) }
+        }
         supportFragmentManager.beginTransaction()
-            .replace(R.id.container, SoundControlFragment())
+            .replace(R.id.container, newFrag)
             .commitNow()
     }
 
