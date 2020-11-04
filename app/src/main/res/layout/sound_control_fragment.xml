@@ -11,7 +11,7 @@
         android:id="@+id/active_sound_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingBottom="56dp" />
+        android:layout_marginBottom="56dp" />
 
     <com.google.android.material.bottomappbar.BottomAppBar
         android:id="@+id/bottomAppBar"
@@ -21,7 +21,9 @@
         style="@style/Widget.MaterialComponents.BottomAppBar.Colored"
         app:navigationIcon="@drawable/ic_menu_24dp"
         app:fabAlignmentMode="end"
-        app:menu="@menu/bottom_app_bar" />
+        app:menu="@menu/bottom_app_bar"
+        app:fabCradleMargin="0dp"
+        app:fabCradleRoundedCornerRadius="0dp"/>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/play_button"
