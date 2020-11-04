@@ -28,14 +28,14 @@
                 android:layout_height="wrap_content"
                 app:srcCompat="@drawable/ic_baseline_keyboard_arrow_up_24" />
 
-            <EditText
-                android:id="@+id/et_hour"
+            <TextView
+                android:id="@+id/tv_hour"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:ems="10"
+                android:inputType="number"
                 android:text="0"
                 android:textAlignment="center"
-                android:inputType="number" />
+                android:textSize="24dp" />
 
             <ImageButton
                 android:id="@+id/btn_hour_decrease"
@@ -55,14 +55,14 @@
                 android:layout_height="wrap_content"
                 app:srcCompat="@drawable/ic_baseline_keyboard_arrow_up_24" />
 
-            <EditText
-                android:id="@+id/et_minute"
+            <TextView
+                android:id="@+id/tv_minute"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:ems="10"
+                android:inputType="number"
                 android:text="0"
                 android:textAlignment="center"
-                android:inputType="number" />
+                android:textSize="24dp" />
 
             <ImageButton
                 android:id="@+id/btn_minute_decrease"
