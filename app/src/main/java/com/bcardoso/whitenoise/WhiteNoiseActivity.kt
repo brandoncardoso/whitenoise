@@ -1,5 +1,6 @@
 package com.bcardoso.whitenoise
 
+import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -17,6 +18,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.bcardoso.whitenoise.ui.main.SoundControlFragment
+import java.util.concurrent.TimeUnit
 
 data class Sound(var name:String, var id: Int, var initialVolume:Float = 0F) {
     var volume = initialVolume
@@ -24,7 +26,9 @@ data class Sound(var name:String, var id: Int, var initialVolume:Float = 0F) {
 
 class WhiteNoiseActivity : AppCompatActivity(), SoundControlInterface {
     private val NOTIFICATION_CHANNEL_ID = "whitenoise"
+    private val NOTIFICATION_ID = 0
     private lateinit var mNotificationManagerCompat : NotificationManagerCompat
+    private lateinit var notificationBuilder : NotificationCompat.Builder
 
     private var mIsPlaying = false
     private val mActiveSounds = mutableListOf<Pair<Sound, MediaPlayer>>()
@@ -56,9 +60,6 @@ class WhiteNoiseActivity : AppCompatActivity(), SoundControlInterface {
                     .commitNow()
         }
 
-        mNotificationManagerCompat = NotificationManagerCompat.from(applicationContext);
-        createNotificationChannel()
-
         val audioAttributes = AudioAttributes.Builder()
             .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
             .setUsage(AudioAttributes.USAGE_MEDIA)
@@ -73,7 +74,12 @@ class WhiteNoiseActivity : AppCompatActivity(), SoundControlInterface {
         }
 
         registerReceiver(receiver, IntentFilter(ACTION.PLAY_TOGGLE.id))
-        generateNotification()
+
+        mNotificationManagerCompat = NotificationManagerCompat.from(applicationContext);
+        createNotificationChannel()
+        notificationBuilder = generateNotificationBuilder()
+        updatePlayToggleAction()
+        updateNotification()
     }
 
     private fun startAllActiveSounds() { mActiveSounds.forEach { (_, mp) -> mp.start() } }
@@ -98,22 +104,12 @@ class WhiteNoiseActivity : AppCompatActivity(), SoundControlInterface {
         }
     }
 
-    fun notifyNotificationManager(notificationId: Int, notification: Notification) {
-        mNotificationManagerCompat.notify(notificationId, notification)
+    private fun updateNotification() {
+        notifyNotificationManager(NOTIFICATION_ID, notificationBuilder.build())
     }
 
-    private fun generateNotification() {
-        val notifyIntent = Intent(this, WhiteNoiseActivity::class.java).apply {
-            action = Intent.ACTION_MAIN
-            addCategory(Intent.CATEGORY_LAUNCHER)
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        }
-        val notifyPendingIntent = PendingIntent.getActivity(
-            this,
-            System.currentTimeMillis().toInt(),
-            notifyIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT)
-
+    @SuppressLint("RestrictedApi")
+    private fun updatePlayToggleAction () {
         val playTogglePendingIntent = PendingIntent.getBroadcast(
             this,
             System.currentTimeMillis().toInt(),
@@ -125,22 +121,36 @@ class WhiteNoiseActivity : AppCompatActivity(), SoundControlInterface {
             playTogglePendingIntent)
             .build()
 
-        var notification
-                = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+        notificationBuilder.mActions = arrayListOf(playToggleAction)
+    }
+
+    private fun notifyNotificationManager(notificationId: Int, notification: Notification) {
+        mNotificationManagerCompat.notify(notificationId, notification)
+    }
+
+    private fun generateNotificationBuilder() : NotificationCompat.Builder {
+        val notifyIntent = Intent(this, WhiteNoiseActivity::class.java).apply {
+            action = Intent.ACTION_MAIN
+            addCategory(Intent.CATEGORY_LAUNCHER)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        }
+        val notifyPendingIntent = PendingIntent.getActivity(
+            this,
+            System.currentTimeMillis().toInt(),
+            notifyIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT)
+
+        return NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
             .setContentText("Whitenoise")
             .setSmallIcon(R.drawable.ic_baseline_play_arrow_24) // TODO app icon
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setContentIntent(notifyPendingIntent)
             .setDefaults(NotificationCompat.DEFAULT_ALL)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            .addAction(playToggleAction) // #0
             .setStyle(androidx.media.app.NotificationCompat.MediaStyle()
                 .setShowActionsInCompactView(0))
             .setOngoing(true)
             .setWhen(0)
-            .build()
-
-        notifyNotificationManager(0, notification)
     }
 
     override fun isPlaying(): Boolean {
@@ -158,7 +168,8 @@ class WhiteNoiseActivity : AppCompatActivity(), SoundControlInterface {
             startAllActiveSounds()
         }
         mIsPlaying = !mIsPlaying
-        generateNotification()
+        updatePlayToggleAction()
+        updateNotification()
         updateSoundControlFragment()
         return mIsPlaying
     }
@@ -177,7 +188,23 @@ class WhiteNoiseActivity : AppCompatActivity(), SoundControlInterface {
     override fun pauseAllSounds() {
         pauseAllActiveSounds()
         mIsPlaying = false
-        generateNotification()
+        updateNotification()
         updateSoundControlFragment()
+    }
+
+    override fun onTimerUpdate(remainingTimeMs: Long) {
+        notificationBuilder.setContentText(String.format(
+            "%02d:%02d:%02d", // HH:MM:SS
+            TimeUnit.MILLISECONDS.toHours(remainingTimeMs), // hours
+            TimeUnit.MILLISECONDS.toMinutes(remainingTimeMs) - // minutes
+                    TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(remainingTimeMs)),
+            TimeUnit.MILLISECONDS.toSeconds(remainingTimeMs) -
+                    TimeUnit.MINUTES.toSeconds(
+                        TimeUnit.MILLISECONDS.toMinutes(
+                            remainingTimeMs
+                        )
+                    )
+        ))
+        updateNotification()
     }
 }

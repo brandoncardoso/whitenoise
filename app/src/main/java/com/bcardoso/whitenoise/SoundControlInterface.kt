@@ -8,4 +8,5 @@ interface SoundControlInterface {
     fun togglePlayPause() : Boolean
     fun updateSoundControlFragment()
     fun pauseAllSounds()
+    fun onTimerUpdate(remainingTimeMs: Long)
 }

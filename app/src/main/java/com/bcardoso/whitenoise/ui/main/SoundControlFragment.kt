@@ -156,6 +156,7 @@ class SoundControlFragment : Fragment() {
                                 )
                             )
                 )
+                mListener.onTimerUpdate(remainingTimeMs)
             }
 
             override fun onFinish() {
