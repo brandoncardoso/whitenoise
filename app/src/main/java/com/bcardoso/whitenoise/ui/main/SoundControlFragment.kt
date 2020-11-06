@@ -82,50 +82,65 @@ class SoundControlFragment : Fragment() {
         val dialogView = requireActivity().layoutInflater.inflate(R.layout.timer_dialog, null)
 
         var curHour = 0
-        var curMin = 0
-        val hourMinMax = Pair(0, 23)
+        var curMinute = 0
+        val hourMin = 0
+        val hourMax = 23
         val hourIncrement = 1
         val minuteIncrement = 5
 
-        val hourText = dialogView.findViewById<TextView>(R.id.tv_hour)
-        dialogView.findViewById<ImageButton>(R.id.btn_hour_increase)?.setOnClickListener {
-            curHour += hourIncrement
-            curHour = curHour.coerceAtMost(hourMinMax.second)
-            hourText?.text = curHour.toString()
-        }
-        dialogView.findViewById<ImageButton>(R.id.btn_hour_decrease)?.setOnClickListener {
-            curHour -= hourIncrement
-            curHour = curHour.coerceAtLeast(hourMinMax.first)
-            hourText?.text = curHour.toString()
-        }
-        val minuteText = dialogView.findViewById<TextView>(R.id.tv_minute)
-        dialogView.findViewById<ImageButton>(R.id.btn_minute_increase)?.setOnClickListener {
-            curMin += minuteIncrement
-            if (curMin >= 60) {
-                curMin %= 60
-                curHour = (curHour + hourIncrement).coerceAtMost(hourMinMax.second)
-                hourText?.text = curHour.toString()
-            }
-            minuteText?.text = curMin.toString()
-        }
-        dialogView.findViewById<ImageButton>(R.id.btn_minute_decrease)?.setOnClickListener {
-            curMin -= minuteIncrement
-            if (curMin < 0 ) {
-                curMin += 60
-                curHour = (curHour - hourIncrement).coerceAtLeast(hourMinMax.first)
-                hourText?.text = curHour.toString()
-            }
-            minuteText?.text = curMin.toString()
-        }
-
-        dialogBuilder
+        val dialog = dialogBuilder
             .setView(dialogView)
             .setCancelable(true)
             .setPositiveButton("Set", ::setTimerFromDialog)
             .setNegativeButton("Cancel") { dialog, _ -> dialog.cancel() }
             .setTitle("Stop sounds in...")
             .create()
-            .show()
+
+        val updatePositiveButton = {
+            dialog.getButton(DialogInterface.BUTTON_POSITIVE)?.isEnabled = !(curMinute == 0 && curHour == 0)
+        }
+
+        val hourText = dialogView.findViewById<TextView>(R.id.tv_hour)
+        val minuteText = dialogView.findViewById<TextView>(R.id.tv_minute)
+
+        dialogView.findViewById<ImageButton>(R.id.btn_hour_increase)?.setOnClickListener {
+            curHour += hourIncrement
+            if (curHour > hourMax) {
+                curHour %= hourMax
+            }
+            hourText?.text = String.format("%02d", curHour)
+            updatePositiveButton()
+        }
+
+        dialogView.findViewById<ImageButton>(R.id.btn_hour_decrease)?.setOnClickListener {
+            curHour -= hourIncrement
+            if (curHour < hourMin) {
+                curHour += hourMax + 1
+            }
+            hourText?.text = String.format("%02d", curHour)
+            updatePositiveButton()
+        }
+
+        dialogView.findViewById<ImageButton>(R.id.btn_minute_increase)?.setOnClickListener {
+            curMinute += minuteIncrement
+            if (curMinute >= 60) {
+                curMinute %= 60
+            }
+            minuteText?.text = String.format("%02d", curMinute)
+            updatePositiveButton()
+        }
+
+        dialogView.findViewById<ImageButton>(R.id.btn_minute_decrease)?.setOnClickListener {
+            curMinute -= minuteIncrement
+            if (curMinute < 0 ) {
+                curMinute += 60
+            }
+            minuteText?.text = String.format("%02d", curMinute)
+            updatePositiveButton()
+        }
+
+        dialog.show()
+        updatePositiveButton()
     }
 
     private fun setTimerFromDialog(di: DialogInterface, id: Int) {
@@ -133,8 +148,11 @@ class SoundControlFragment : Fragment() {
         val hours = Integer.parseInt(dialog.findViewById<TextView>(R.id.tv_hour)?.text.toString())
         val minutes = Integer.parseInt(dialog.findViewById<TextView>(R.id.tv_minute)?.text.toString())
 
-        val totalMillis = ((hours * 60 * 60000) + (minutes * 60000)).toLong()
-        setTimer(totalMillis)
+        if (hours > 0 || minutes > 0) {
+            val totalMillis = ((hours * 60 * 60000) + (minutes * 60000)).toLong()
+            setTimer(totalMillis)
+        }
+
         dialog.dismiss()
     }
 
