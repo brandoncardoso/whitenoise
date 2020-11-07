@@ -91,8 +91,8 @@ class SoundControlFragment : Fragment() {
         val dialogBuilder = AlertDialog.Builder(view.context)
         val dialogView = requireActivity().layoutInflater.inflate(R.layout.timer_dialog, null)
 
-        var curHour = 0
-        var curMinute = 0
+        var curHours = 0
+        var curMinutes = 0
         val hourMin = 0
         val hourMax = 23
         val hourIncrement = 1
@@ -101,69 +101,60 @@ class SoundControlFragment : Fragment() {
         val dialog = dialogBuilder
             .setView(dialogView)
             .setCancelable(true)
-            .setPositiveButton("Set") { dialog, _ -> setTimerFromDialog(dialog) }
+            .setPositiveButton("Set") { dialog, _ ->
+                val totalMillis = ((curHours * 60 * 60000) + (curMinutes * 60000)).toLong()
+                setTimer(totalMillis)
+                dialog.dismiss()
+            }
             .setNegativeButton("Cancel") { dialog, _ -> dialog.cancel() }
             .setTitle("Stop in...")
             .create()
 
         val updatePositiveButton = {
-            dialog.getButton(DialogInterface.BUTTON_POSITIVE)?.isEnabled = !(curMinute == 0 && curHour == 0)
+            dialog.getButton(DialogInterface.BUTTON_POSITIVE)?.isEnabled = !(curMinutes == 0 && curHours == 0)
         }
 
         val hourText = dialogView.findViewById<TextView>(R.id.tv_hour)
         val minuteText = dialogView.findViewById<TextView>(R.id.tv_minute)
 
         dialogView.findViewById<ImageButton>(R.id.btn_hour_increase)?.setOnClickListener {
-            curHour += hourIncrement
-            if (curHour > hourMax) {
-                curHour %= hourMax
+            curHours += hourIncrement
+            if (curHours > hourMax) {
+                curHours %= hourMax
             }
-            hourText?.text = String.format("%02d", curHour)
+            hourText?.text = String.format("%02d", curHours)
             updatePositiveButton()
         }
 
         dialogView.findViewById<ImageButton>(R.id.btn_hour_decrease)?.setOnClickListener {
-            curHour -= hourIncrement
-            if (curHour < hourMin) {
-                curHour += hourMax + 1
+            curHours -= hourIncrement
+            if (curHours < hourMin) {
+                curHours += hourMax + 1
             }
-            hourText?.text = String.format("%02d", curHour)
+            hourText?.text = String.format("%02d", curHours)
             updatePositiveButton()
         }
 
         dialogView.findViewById<ImageButton>(R.id.btn_minute_increase)?.setOnClickListener {
-            curMinute += minuteIncrement
-            if (curMinute >= 60) {
-                curMinute %= 60
+            curMinutes += minuteIncrement
+            if (curMinutes >= 60) {
+                curMinutes %= 60
             }
-            minuteText?.text = String.format("%02d", curMinute)
+            minuteText?.text = String.format("%02d", curMinutes)
             updatePositiveButton()
         }
 
         dialogView.findViewById<ImageButton>(R.id.btn_minute_decrease)?.setOnClickListener {
-            curMinute -= minuteIncrement
-            if (curMinute < 0 ) {
-                curMinute += 60
+            curMinutes -= minuteIncrement
+            if (curMinutes < 0 ) {
+                curMinutes += 60
             }
-            minuteText?.text = String.format("%02d", curMinute)
+            minuteText?.text = String.format("%02d", curMinutes)
             updatePositiveButton()
         }
 
         dialog.show()
         updatePositiveButton()
-    }
-
-    private fun setTimerFromDialog(di: DialogInterface) {
-        val dialog = di as AlertDialog
-        val hours = Integer.parseInt(dialog.findViewById<TextView>(R.id.tv_hour)?.text.toString())
-        val minutes = Integer.parseInt(dialog.findViewById<TextView>(R.id.tv_minute)?.text.toString())
-
-        if (hours > 0 || minutes > 0) {
-            val totalMillis = ((hours * 60 * 60000) + (minutes * 60000)).toLong()
-            setTimer(totalMillis)
-        }
-
-        dialog.dismiss()
     }
 
     private fun setTimer(timeInMillis: Long) {
