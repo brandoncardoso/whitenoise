@@ -10,4 +10,5 @@ interface SoundControlInterface {
     fun pauseAllSounds()
     fun onTimerUpdate(remainingTimeMs: Long)
     fun onTimerFinish()
+    fun onTimerCancel()
 }

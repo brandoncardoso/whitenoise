@@ -207,7 +207,14 @@ class WhiteNoiseActivity : AppCompatActivity(), SoundControlInterface {
         ))
         updateNotification()
     }
+
+    override fun onTimerCancel() {
+        notificationBuilder.setContentText(null)
+        updateNotification()
+    }
+
     override fun onTimerFinish() {
+        notificationBuilder.setContentText("Timer finished.")
         pauseAllSounds()
     }
 }

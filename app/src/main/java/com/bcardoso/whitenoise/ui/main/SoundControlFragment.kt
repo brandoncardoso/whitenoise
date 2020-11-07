@@ -83,8 +83,10 @@ class SoundControlFragment : Fragment() {
 
     private fun cancelTimer() {
         if (this::countDownTimer.isInitialized) countDownTimer.cancel()
+        countDownTimeRemaining = null
         timeRemainingText.visibility = View.GONE
         cancelTimerButton.visibility = View.GONE
+        mListener.onTimerCancel()
     }
 
     private fun openSetTimeDialog(view: View) {
