@@ -9,4 +9,5 @@ interface SoundControlInterface {
     fun updateSoundControlFragment()
     fun pauseAllSounds()
     fun onTimerUpdate(remainingTimeMs: Long)
+    fun onTimerFinish()
 }

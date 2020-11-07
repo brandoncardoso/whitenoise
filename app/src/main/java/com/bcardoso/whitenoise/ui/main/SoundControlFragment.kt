@@ -27,8 +27,9 @@ class SoundControlFragment : Fragment() {
     private lateinit var mActiveSoundListView: RecyclerView
     private lateinit var mActiveSoundAdapter: ActiveSoundAdapter
 
-    private lateinit var timerButton : ActionMenuItemView
+    private lateinit var setTimerButton : ActionMenuItemView
     private lateinit var timeRemainingText : ActionMenuItemView
+    private lateinit var cancelTimerButton : ActionMenuItemView
     private lateinit var countDownTimer : CountDownTimer
     private var countDownTimeRemaining : Long? = null
     val TIME_REMAINING_KEY = "TIME_REMAINING"
@@ -64,9 +65,12 @@ class SoundControlFragment : Fragment() {
             updatePlayButtonImage(isPlaying)
         }
 
-        timerButton = view.findViewById(R.id.mi_set_timer)
-        timerButton.setOnClickListener(::openSetTimeDialog)
+        setTimerButton = view.findViewById(R.id.mi_set_timer)
+        setTimerButton.setOnClickListener(::openSetTimeDialog)
         timeRemainingText = view.findViewById(R.id.mi_time_remaining)
+        cancelTimerButton = view.findViewById(R.id.mi_cancel_timer)
+        cancelTimerButton.setOnClickListener{ cancelTimer() }
+        cancelTimer()
         val timeRemaining =  arguments?.getLong(TIME_REMAINING_KEY)
         timeRemaining?.let { if (it > 0) setTimer(it) }
         //val addSoundButton = view.findViewById<ActionMenuItemView>(R.id.add_sound_button)
@@ -75,6 +79,12 @@ class SoundControlFragment : Fragment() {
 
     fun getTimeRemaining() : Long? {
         return countDownTimeRemaining
+    }
+
+    private fun cancelTimer() {
+        if (this::countDownTimer.isInitialized) countDownTimer.cancel()
+        timeRemainingText.visibility = View.GONE
+        cancelTimerButton.visibility = View.GONE
     }
 
     private fun openSetTimeDialog(view: View) {
@@ -91,9 +101,9 @@ class SoundControlFragment : Fragment() {
         val dialog = dialogBuilder
             .setView(dialogView)
             .setCancelable(true)
-            .setPositiveButton("Set", ::setTimerFromDialog)
+            .setPositiveButton("Set") { dialog, _ -> setTimerFromDialog(dialog) }
             .setNegativeButton("Cancel") { dialog, _ -> dialog.cancel() }
-            .setTitle("Stop sounds in...")
+            .setTitle("Stop in...")
             .create()
 
         val updatePositiveButton = {
@@ -143,7 +153,7 @@ class SoundControlFragment : Fragment() {
         updatePositiveButton()
     }
 
-    private fun setTimerFromDialog(di: DialogInterface, id: Int) {
+    private fun setTimerFromDialog(di: DialogInterface) {
         val dialog = di as AlertDialog
         val hours = Integer.parseInt(dialog.findViewById<TextView>(R.id.tv_hour)?.text.toString())
         val minutes = Integer.parseInt(dialog.findViewById<TextView>(R.id.tv_minute)?.text.toString())
@@ -157,7 +167,9 @@ class SoundControlFragment : Fragment() {
     }
 
     private fun setTimer(timeInMillis: Long) {
-        if (this::countDownTimer.isInitialized) countDownTimer.cancel()
+        cancelTimer()
+        timeRemainingText.visibility = View.VISIBLE
+        cancelTimerButton.visibility = View.VISIBLE
 
         countDownTimer = object:CountDownTimer(timeInMillis, 1000) {
             override fun onTick(remainingTimeMs: Long) {
@@ -178,7 +190,7 @@ class SoundControlFragment : Fragment() {
             }
 
             override fun onFinish() {
-                mListener.pauseAllSounds()
+                mListener.onTimerFinish()
             }
         }
         countDownTimer.start()
@@ -194,7 +206,7 @@ class SoundControlFragment : Fragment() {
 
     override fun onDestroy() {
         super.onDestroy()
-        if (this::countDownTimer.isInitialized) countDownTimer.cancel()
+        cancelTimer()
     }
 
     /*

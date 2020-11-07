@@ -17,6 +17,12 @@
         android:title="@string/set_sleep_time_title" />
 
     <item
+        android:title="Cancel Timer"
+        android:id="@+id/mi_cancel_timer"
+        android:icon="@drawable/ic_baseline_timer_off_24"
+        app:showAsAction="always" />
+
+    <item
         android:id="@+id/mi_time_remaining"
         app:showAsAction="always"
         android:enabled="false"

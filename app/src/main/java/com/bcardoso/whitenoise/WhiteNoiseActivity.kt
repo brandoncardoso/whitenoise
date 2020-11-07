@@ -207,4 +207,7 @@ class WhiteNoiseActivity : AppCompatActivity(), SoundControlInterface {
         ))
         updateNotification()
     }
+    override fun onTimerFinish() {
+        pauseAllSounds()
+    }
 }
