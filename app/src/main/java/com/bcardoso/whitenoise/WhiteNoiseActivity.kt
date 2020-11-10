@@ -5,16 +5,11 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
+import android.content.*
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.os.Build
 import android.os.Bundle
-import android.preference.PreferenceManager
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -26,8 +21,7 @@ data class Sound(var name:String, var id: Int, var initialVolume:Float = 0F) {
 }
 
 class WhiteNoiseActivity : AppCompatActivity(), SoundControlInterface {
-
-    val sharedPref = getPreferences(Context.MODE_PRIVATE)
+    private lateinit var volumePrefs : SharedPreferences
 
     private val NOTIFICATION_CHANNEL_ID = "whitenoise"
     private val NOTIFICATION_ID = 0
@@ -36,10 +30,7 @@ class WhiteNoiseActivity : AppCompatActivity(), SoundControlInterface {
 
     private var mIsPlaying = false
     private val mActiveSounds = mutableListOf<Pair<Sound, MediaPlayer>>()
-    private val mSounds = listOf(
-        Sound("Rain", R.raw.rain, sharedPref.getFloat("rain_volume", 0.5F)),
-        Sound("Thunder", R.raw.thunder, sharedPref.getFloat("thunder_volume", 0.5F))
-    )
+    private lateinit var mSounds : List<Sound>
 
     enum class ACTION(val id:String) {
         PLAY_TOGGLE("com.bcardoso.whitenoise.action.PLAY_TOGGLE")
@@ -59,11 +50,18 @@ class WhiteNoiseActivity : AppCompatActivity(), SoundControlInterface {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.`white_noise_activity`)
 
+        volumePrefs = getSharedPreferences("volumes", Context.MODE_PRIVATE)
+
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
                     .replace(R.id.container, SoundControlFragment.newInstance())
                     .commitNow()
         }
+
+        mSounds = listOf(
+            Sound("Rain", R.raw.rain, volumePrefs.getFloat("Rain", 0F)),
+            Sound("Thunder", R.raw.thunder, volumePrefs.getFloat("Thunder", 0F))
+        )
 
         val audioAttributes = AudioAttributes.Builder()
             .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)

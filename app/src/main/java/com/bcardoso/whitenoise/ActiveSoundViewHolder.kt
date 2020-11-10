@@ -1,5 +1,7 @@
 package com.bcardoso.whitenoise
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.media.MediaPlayer
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -12,8 +14,10 @@ class ActiveSoundViewHolder(inflater: LayoutInflater, parent: ViewGroup) :
         RecyclerView.ViewHolder(inflater.inflate(R.layout.active_sound_list_item, parent, false)) {
     private var mNameView : TextView = itemView.findViewById(R.id.active_sound_list_item_name)
     private var mVolumeControl : SeekBar = itemView.findViewById(R.id.active_sound_list_item_volume)
+    val volumePrefs = parent.context.getSharedPreferences("volumes", Context.MODE_PRIVATE)
 
     init {
+
         mVolumeControl.max = 100
     }
 
@@ -22,10 +26,10 @@ class ActiveSoundViewHolder(inflater: LayoutInflater, parent: ViewGroup) :
 
         mNameView.text = sound.name
         mVolumeControl.progress = (sound.volume * 100).toInt()
-        mVolumeControl.setOnSeekBarChangeListener(VolumeControlChangeListener(sound, mediaPlayer))
+        mVolumeControl.setOnSeekBarChangeListener(VolumeControlChangeListener(sound, mediaPlayer, volumePrefs))
     }
 
-    private class VolumeControlChangeListener(val sound: Sound, val mediaPlayer: MediaPlayer) : OnSeekBarChangeListener {
+    private class VolumeControlChangeListener(val sound: Sound, val mediaPlayer: MediaPlayer, val volumePrefs:SharedPreferences) : OnSeekBarChangeListener {
         override fun onProgressChanged(seekbar: SeekBar?, progress: Int, fromUser: Boolean) {
             val newVolume = progress / 100.0F
             sound.volume = newVolume
@@ -33,6 +37,13 @@ class ActiveSoundViewHolder(inflater: LayoutInflater, parent: ViewGroup) :
         }
 
         override fun onStartTrackingTouch(p0: SeekBar?) { }
-        override fun onStopTrackingTouch(p0: SeekBar?) { }
+        override fun onStopTrackingTouch(seekbar: SeekBar?) {
+            with (volumePrefs.edit()) {
+                if (seekbar != null) {
+                    putFloat(sound.name, seekbar.progress / 100.0F)
+                }
+                apply()
+            }
+        }
     }
 }
