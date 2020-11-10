@@ -13,6 +13,7 @@ import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.os.Build
 import android.os.Bundle
+import android.preference.PreferenceManager
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
@@ -25,6 +26,9 @@ data class Sound(var name:String, var id: Int, var initialVolume:Float = 0F) {
 }
 
 class WhiteNoiseActivity : AppCompatActivity(), SoundControlInterface {
+
+    val sharedPref = getPreferences(Context.MODE_PRIVATE)
+
     private val NOTIFICATION_CHANNEL_ID = "whitenoise"
     private val NOTIFICATION_ID = 0
     private lateinit var mNotificationManagerCompat : NotificationManagerCompat
@@ -33,9 +37,10 @@ class WhiteNoiseActivity : AppCompatActivity(), SoundControlInterface {
     private var mIsPlaying = false
     private val mActiveSounds = mutableListOf<Pair<Sound, MediaPlayer>>()
     private val mSounds = listOf(
-        Sound("Rain", R.raw.rain, .78F),
-        Sound("Thunder", R.raw.thunder, 0.1F)
+        Sound("Rain", R.raw.rain, sharedPref.getFloat("rain_volume", 0.5F)),
+        Sound("Thunder", R.raw.thunder, sharedPref.getFloat("thunder_volume", 0.5F))
     )
+
     enum class ACTION(val id:String) {
         PLAY_TOGGLE("com.bcardoso.whitenoise.action.PLAY_TOGGLE")
     }
@@ -188,7 +193,6 @@ class WhiteNoiseActivity : AppCompatActivity(), SoundControlInterface {
     override fun pauseAllSounds() {
         pauseAllActiveSounds()
         mIsPlaying = false
-        updateNotification()
         updateSoundControlFragment()
     }
 
@@ -216,5 +220,6 @@ class WhiteNoiseActivity : AppCompatActivity(), SoundControlInterface {
     override fun onTimerFinish() {
         notificationBuilder.setContentText("Timer finished.")
         pauseAllSounds()
+        updateNotification()
     }
 }
