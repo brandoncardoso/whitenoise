@@ -183,6 +183,9 @@ class SoundControlFragment : Fragment() {
             }
 
             override fun onFinish() {
+                countDownTimeRemaining = null
+                timeRemainingText.visibility = View.GONE
+                cancelTimerButton.visibility = View.GONE
                 mListener.onTimerFinish()
             }
         }
