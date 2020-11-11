@@ -93,12 +93,12 @@ class WhiteNoiseActivity : AppCompatActivity(), SoundControlInterface {
         // Create the NotificationChannel, but only on API 26+ because
         // the NotificationChannel class is new and not in the support library
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = getString(R.string.channel_name)
-            val descriptionText = getString(R.string.channel_description)
-            val importance = NotificationManager.IMPORTANCE_DEFAULT
-            val channel =
-                NotificationChannel(NOTIFICATION_CHANNEL_ID, name, importance).apply {
-                    description = descriptionText
+            val channel = NotificationChannel(
+                NOTIFICATION_CHANNEL_ID,
+                "whitenoise",
+                NotificationManager.IMPORTANCE_LOW)
+                .apply {
+                    description = getString(R.string.channel_description)
                 }
             // Register the channel with the system
             val notificationManager: NotificationManager =
@@ -144,12 +144,11 @@ class WhiteNoiseActivity : AppCompatActivity(), SoundControlInterface {
             PendingIntent.FLAG_UPDATE_CURRENT)
 
         return NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+            .setDefaults(NotificationCompat.DEFAULT_ALL)
+            .setPriority(NotificationCompat.PRIORITY_LOW)
             .setContentText("Whitenoise")
             .setSmallIcon(R.drawable.ic_baseline_play_arrow_24) // TODO app icon
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setContentIntent(notifyPendingIntent)
-            .setDefaults(NotificationCompat.DEFAULT_ALL)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setStyle(androidx.media.app.NotificationCompat.MediaStyle()
                 .setShowActionsInCompactView(0))
             .setOngoing(true)
