@@ -151,7 +151,6 @@ class WhiteNoiseActivity : AppCompatActivity(), SoundControlInterface {
             .setContentIntent(notifyPendingIntent)
             .setStyle(androidx.media.app.NotificationCompat.MediaStyle()
                 .setShowActionsInCompactView(0))
-            .setOngoing(true)
             .setWhen(0)
     }
 
@@ -218,5 +217,10 @@ class WhiteNoiseActivity : AppCompatActivity(), SoundControlInterface {
         notificationBuilder.setContentText("Timer finished.")
         pauseAllSounds()
         updateNotification()
+    }
+
+    override fun onDestroy() {
+        mNotificationManagerCompat.cancelAll()
+        super.onDestroy()
     }
 }
