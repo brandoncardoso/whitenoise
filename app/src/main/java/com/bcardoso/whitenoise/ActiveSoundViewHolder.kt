@@ -1,8 +1,8 @@
 package com.bcardoso.whitenoise
 
+import LoopMediaPlayer
 import android.content.Context
 import android.content.SharedPreferences
-import android.media.MediaPlayer
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.SeekBar
@@ -21,7 +21,7 @@ class ActiveSoundViewHolder(inflater: LayoutInflater, parent: ViewGroup) :
         mVolumeControl.max = 100
     }
 
-    fun bind(soundPair : Pair<Sound, MediaPlayer>) {
+    fun bind(soundPair: Pair<Sound, LoopMediaPlayer>) {
         var (sound, mediaPlayer) = soundPair
 
         mNameView.text = sound.name
@@ -29,11 +29,13 @@ class ActiveSoundViewHolder(inflater: LayoutInflater, parent: ViewGroup) :
         mVolumeControl.setOnSeekBarChangeListener(VolumeControlChangeListener(sound, mediaPlayer, volumePrefs))
     }
 
-    private class VolumeControlChangeListener(val sound: Sound, val mediaPlayer: MediaPlayer, val volumePrefs:SharedPreferences) : OnSeekBarChangeListener {
+    private class VolumeControlChangeListener(val sound: Sound,
+                                              val mediaPlayer: LoopMediaPlayer,
+                                              val volumePrefs:SharedPreferences) : OnSeekBarChangeListener {
         override fun onProgressChanged(seekbar: SeekBar?, progress: Int, fromUser: Boolean) {
             val newVolume = progress / 100.0F
             sound.volume = newVolume
-            mediaPlayer.setVolume(newVolume, newVolume)
+            mediaPlayer.setVolume(newVolume)
         }
 
         override fun onStartTrackingTouch(p0: SeekBar?) { }

@@ -1,5 +1,6 @@
 package com.bcardoso.whitenoise
 
+import LoopMediaPlayer
 import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationChannel
@@ -7,7 +8,6 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.*
 import android.media.AudioAttributes
-import android.media.MediaPlayer
 import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -29,7 +29,7 @@ class WhiteNoiseActivity : AppCompatActivity(), SoundControlInterface {
     private lateinit var notificationBuilder : NotificationCompat.Builder
 
     private var mIsPlaying = false
-    private val mActiveSounds = mutableListOf<Pair<Sound, MediaPlayer>>()
+    private val mActiveSounds = mutableListOf<Pair<Sound, LoopMediaPlayer>>()
     private lateinit var mSounds : List<Sound>
 
     enum class ACTION(val id:String) {
@@ -69,11 +69,10 @@ class WhiteNoiseActivity : AppCompatActivity(), SoundControlInterface {
             .build()
 
         mSounds.forEach { sound ->
-            val mediaPlayer = MediaPlayer.create(this, sound.id, audioAttributes, 1)
-            mediaPlayer.setAudioAttributes(audioAttributes)
-            mediaPlayer.setVolume(sound.volume, sound.volume)
-            mediaPlayer.isLooping = true
-            mActiveSounds.add(Pair(sound, mediaPlayer))
+            mActiveSounds.add(Pair(
+                sound,
+                LoopMediaPlayer.create(this, sound.id, audioAttributes, sound.volume)
+            ))
         }
 
         registerReceiver(receiver, IntentFilter(ACTION.PLAY_TOGGLE.id))
@@ -158,7 +157,7 @@ class WhiteNoiseActivity : AppCompatActivity(), SoundControlInterface {
         return mIsPlaying
     }
 
-    override fun getActiveSounds(): MutableList<Pair<Sound, MediaPlayer>> {
+    override fun getActiveSounds(): MutableList<Pair<Sound, LoopMediaPlayer>> {
         return mActiveSounds
     }
 

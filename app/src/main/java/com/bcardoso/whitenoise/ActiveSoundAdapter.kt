@@ -1,12 +1,11 @@
 package com.bcardoso.whitenoise
 
-import android.content.Context
-import android.media.MediaPlayer
+import LoopMediaPlayer
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 
-class ActiveSoundAdapter(private var mActiveSounds: MutableList<Pair<Sound, MediaPlayer>>) :
+class ActiveSoundAdapter(private var mActiveSounds: MutableList<Pair<Sound, LoopMediaPlayer>>) :
         RecyclerView.Adapter<ActiveSoundViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ActiveSoundViewHolder {
