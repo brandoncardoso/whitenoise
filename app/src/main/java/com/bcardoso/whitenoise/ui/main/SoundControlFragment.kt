@@ -1,24 +1,61 @@
 package com.bcardoso.whitenoise.ui.main
 
 import android.content.Context
-import android.content.DialogInterface
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageButton
-import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.menu.ActionMenuItemView
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bcardoso.whitenoise.ActiveSoundAdapter
 import com.bcardoso.whitenoise.R
 import com.bcardoso.whitenoise.SoundControlInterface
+import com.bcardoso.whitenoise.databinding.TimerDialogBinding
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import java.util.concurrent.TimeUnit
+
+class TimerDialogTime(hoursInitial : Int, minutesInitial: Int) {
+
+    private var _hours: MutableLiveData<Int> = MutableLiveData(hoursInitial)
+    private var _minutes: MutableLiveData<Int> = MutableLiveData(minutesInitial)
+    val hours : LiveData<Int> = _hours
+    val minutes : LiveData<Int> = _minutes
+
+    private val hoursIncrement = 1
+    private val minutesIncrement = 5
+
+    private fun increment(x: Int, increment: Int, max: Int): Int {
+        var retVal = x + increment
+        if (retVal >= max) {
+            retVal %= max
+        }
+        return retVal
+    }
+
+    private fun decrement(x: Int, decrement: Int, max: Int, min: Int): Int {
+        var retVal = x - decrement
+        if (retVal < min) {
+            retVal += max
+        }
+        return retVal
+    }
+
+    fun incrementHours() { _hours.value = increment(_hours.value!!, hoursIncrement, 24) }
+    fun decrementHours() { _hours.value = decrement(_hours.value!!, hoursIncrement, 24, 0) }
+    fun incrementMinutes() { _minutes.value = increment(_minutes.value!!, minutesIncrement, 60) }
+    fun decrementMinutes() { _minutes.value = decrement(_minutes.value!!, minutesIncrement, 60, 0) }
+
+    fun getMillis(): Long {
+        return (((_hours.value!! * 60) + _minutes.value!!) * 60 * 1000).toLong()
+    }
+}
 
 class SoundControlFragment : Fragment() {
     private lateinit var mContext: Context
@@ -90,73 +127,25 @@ class SoundControlFragment : Fragment() {
     }
 
     private fun openSetTimeDialog(view: View) {
-        val dialogBuilder = AlertDialog.Builder(view.context)
-        val dialogView = requireActivity().layoutInflater.inflate(R.layout.timer_dialog, null)
+        val binding = DataBindingUtil.inflate<TimerDialogBinding>(
+            LayoutInflater.from(view.context),
+            R.layout.timer_dialog,
+            null,
+            false)
+        binding.lifecycleOwner = this
+        binding.time = TimerDialogTime(0, 0)
 
-        var curHours = 0
-        var curMinutes = 0
-        val hourMin = 0
-        val hourMax = 23
-        val hourIncrement = 1
-        val minuteIncrement = 5
-
-        val dialog = dialogBuilder
-            .setView(dialogView)
+        AlertDialog.Builder(view.context)
+            .setView(binding.root)
             .setCancelable(true)
-            .setPositiveButton("Set") { dialog, _ ->
-                val totalMillis = ((curHours * 60 * 60000) + (curMinutes * 60000)).toLong()
-                setTimer(totalMillis)
+            .setPositiveButton("Start") { dialog, _ ->
+                binding.time?.let { setTimer(it.getMillis()) }
                 dialog.dismiss()
             }
             .setNegativeButton("Cancel") { dialog, _ -> dialog.cancel() }
             .setTitle("Stop in...")
             .create()
-
-        val updatePositiveButton = {
-            dialog.getButton(DialogInterface.BUTTON_POSITIVE)?.isEnabled = !(curMinutes == 0 && curHours == 0)
-        }
-
-        val hourText = dialogView.findViewById<TextView>(R.id.tv_hour)
-        val minuteText = dialogView.findViewById<TextView>(R.id.tv_minute)
-
-        dialogView.findViewById<ImageButton>(R.id.btn_hour_increase)?.setOnClickListener {
-            curHours += hourIncrement
-            if (curHours > hourMax) {
-                curHours %= hourMax
-            }
-            hourText?.text = String.format("%02d", curHours)
-            updatePositiveButton()
-        }
-
-        dialogView.findViewById<ImageButton>(R.id.btn_hour_decrease)?.setOnClickListener {
-            curHours -= hourIncrement
-            if (curHours < hourMin) {
-                curHours += hourMax + 1
-            }
-            hourText?.text = String.format("%02d", curHours)
-            updatePositiveButton()
-        }
-
-        dialogView.findViewById<ImageButton>(R.id.btn_minute_increase)?.setOnClickListener {
-            curMinutes += minuteIncrement
-            if (curMinutes >= 60) {
-                curMinutes %= 60
-            }
-            minuteText?.text = String.format("%02d", curMinutes)
-            updatePositiveButton()
-        }
-
-        dialogView.findViewById<ImageButton>(R.id.btn_minute_decrease)?.setOnClickListener {
-            curMinutes -= minuteIncrement
-            if (curMinutes < 0 ) {
-                curMinutes += 60
-            }
-            minuteText?.text = String.format("%02d", curMinutes)
-            updatePositiveButton()
-        }
-
-        dialog.show()
-        updatePositiveButton()
+            .show()
     }
 
     private fun setTimer(timeInMillis: Long) {

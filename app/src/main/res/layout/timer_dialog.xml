@@ -1,97 +1,108 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <TableLayout
+    <data>
+        <variable
+            name="time"
+            type="com.bcardoso.whitenoise.ui.main.TimerDialogTime" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.0">
+        android:layout_height="match_parent">
 
-        <TableRow
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center">
-
-            <ImageButton
-                android:id="@+id/btn_hour_increase"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:srcCompat="@drawable/ic_baseline_keyboard_arrow_up_24" />
-
-            <Space
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-
-            <ImageButton
-                android:id="@+id/btn_minute_increase"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:srcCompat="@drawable/ic_baseline_keyboard_arrow_up_24" />
-
-        </TableRow>
-
-        <TableRow
+        <TableLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:gravity="center">
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.0">
 
-            <TextView
-                android:id="@+id/tv_hour"
-                android:layout_width="match_parent"
+            <TableRow
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:width="64dp"
-                android:inputType="number"
-                android:text="HH"
-                android:textAlignment="center"
-                android:textSize="24dp" />
+                android:gravity="center">
 
-            <TextView
-                android:id="@+id/tv_timer_colon"
+                <ImageButton
+                    android:id="@+id/btn_hour_increase"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:srcCompat="@drawable/ic_baseline_keyboard_arrow_up_24"
+                    android:onClick='@{() -> time.incrementHours()}'/>
+
+                <Space
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <ImageButton
+                    android:id="@+id/btn_minute_increase"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:srcCompat="@drawable/ic_baseline_keyboard_arrow_up_24"
+                    android:onClick='@{() -> time.incrementMinutes()}'/>
+
+            </TableRow>
+
+            <TableRow
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:text=":"
-                android:textSize="24dp" />
+                android:gravity="center">
 
-            <TextView
-                android:id="@+id/tv_minute"
+                <TextView
+                    android:id="@+id/tv_hour"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:width="64dp"
+                    android:inputType="number"
+                    android:text='@{String.format("%02d", time.hours)}'
+                    android:textAlignment="center"
+                    android:textSize="24dp" />
+
+                <TextView
+                    android:id="@+id/tv_timer_colon"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:text=":"
+                    android:textSize="24dp" />
+
+                <TextView
+                    android:id="@+id/tv_minute"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:width="64dp"
+                    android:inputType="number"
+                    android:text='@{String.format("%02d", time.minutes)}'
+                    android:textAlignment="center"
+                    android:textSize="24dp" />
+            </TableRow>
+
+            <TableRow
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:width="64dp"
-                android:inputType="number"
-                android:text="MM"
-                android:textAlignment="center"
-                android:textSize="24dp" />
-        </TableRow>
+                android:layout_height="match_parent"
+                android:gravity="center">
 
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center">
+                <ImageButton
+                    android:id="@+id/btn_hour_decrease"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:srcCompat="@drawable/ic_baseline_keyboard_arrow_down_24"
+                    android:onClick='@{() -> time.decrementHours()}'/>
 
-            <ImageButton
-                android:id="@+id/btn_hour_decrease"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:srcCompat="@drawable/ic_baseline_keyboard_arrow_down_24" />
+                <Space
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
 
-            <Space
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-
-            <ImageButton
-                android:id="@+id/btn_minute_decrease"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:srcCompat="@drawable/ic_baseline_keyboard_arrow_down_24" />
-        </TableRow>
-    </TableLayout>
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+                <ImageButton
+                    android:id="@+id/btn_minute_decrease"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:srcCompat="@drawable/ic_baseline_keyboard_arrow_down_24"
+                    android:onClick='@{() -> time.decrementMinutes()}'/>
+            </TableRow>
+        </TableLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>
