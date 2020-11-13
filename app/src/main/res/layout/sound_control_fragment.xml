@@ -15,20 +15,20 @@
 
     <com.google.android.material.bottomappbar.BottomAppBar
         android:id="@+id/bottomAppBar"
+        style="@style/Widget.MaterialComponents.BottomAppBar.Colored"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        style="@style/Widget.MaterialComponents.BottomAppBar.Colored"
-        app:navigationIcon="@drawable/ic_menu_24dp"
         app:fabAlignmentMode="end"
-        app:menu="@menu/bottom_app_bar"
         app:fabCradleMargin="0dp"
-        app:fabCradleRoundedCornerRadius="0dp"/>
+        app:fabCradleRoundedCornerRadius="0dp"
+        app:menu="@menu/bottom_app_bar"
+        app:navigationIcon="@drawable/ic_menu_24dp" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/play_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:srcCompat="@drawable/ic_baseline_play_arrow_24"
-        app:layout_anchor="@id/bottomAppBar" />
+        app:layout_anchor="@id/bottomAppBar"
+        app:srcCompat="@drawable/ic_baseline_play_arrow_24" />
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

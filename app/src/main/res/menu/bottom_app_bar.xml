@@ -11,20 +11,20 @@
 
     <item
         android:id="@+id/mi_set_timer"
-        android:icon="@drawable/ic_baseline_timer_24"
         android:contentDescription="@string/set_sleep_time_description"
-        app:showAsAction="always"
-        android:title="@string/set_sleep_time_title" />
+        android:icon="@drawable/ic_baseline_timer_24"
+        android:title="@string/set_sleep_time_title"
+        app:showAsAction="always" />
 
     <item
-        android:title="Cancel Timer"
         android:id="@+id/mi_cancel_timer"
         android:icon="@drawable/ic_baseline_timer_off_24"
+        android:title="Cancel Timer"
         app:showAsAction="always" />
 
     <item
         android:id="@+id/mi_time_remaining"
-        app:showAsAction="always"
         android:enabled="false"
-        android:title="" />
+        android:title=""
+        app:showAsAction="always" />
 </menu>

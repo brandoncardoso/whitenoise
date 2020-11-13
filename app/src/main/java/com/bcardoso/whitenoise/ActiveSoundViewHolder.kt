@@ -11,9 +11,9 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
 class ActiveSoundViewHolder(inflater: LayoutInflater, parent: ViewGroup) :
-        RecyclerView.ViewHolder(inflater.inflate(R.layout.active_sound_list_item, parent, false)) {
-    private var mNameView : TextView = itemView.findViewById(R.id.active_sound_list_item_name)
-    private var mVolumeControl : SeekBar = itemView.findViewById(R.id.active_sound_list_item_volume)
+    RecyclerView.ViewHolder(inflater.inflate(R.layout.active_sound_list_item, parent, false)) {
+    private var mNameView: TextView = itemView.findViewById(R.id.active_sound_list_item_name)
+    private var mVolumeControl: SeekBar = itemView.findViewById(R.id.active_sound_list_item_volume)
     val volumePrefs = parent.context.getSharedPreferences("volumes", Context.MODE_PRIVATE)
 
     init {
@@ -26,21 +26,29 @@ class ActiveSoundViewHolder(inflater: LayoutInflater, parent: ViewGroup) :
 
         mNameView.text = sound.name
         mVolumeControl.progress = (sound.volume * 100).toInt()
-        mVolumeControl.setOnSeekBarChangeListener(VolumeControlChangeListener(sound, mediaPlayer, volumePrefs))
+        mVolumeControl.setOnSeekBarChangeListener(
+            VolumeControlChangeListener(
+                sound,
+                mediaPlayer,
+                volumePrefs
+            )
+        )
     }
 
-    private class VolumeControlChangeListener(val sound: Sound,
-                                              val mediaPlayer: LoopMediaPlayer,
-                                              val volumePrefs:SharedPreferences) : OnSeekBarChangeListener {
+    private class VolumeControlChangeListener(
+        val sound: Sound,
+        val mediaPlayer: LoopMediaPlayer,
+        val volumePrefs: SharedPreferences
+    ) : OnSeekBarChangeListener {
         override fun onProgressChanged(seekbar: SeekBar?, progress: Int, fromUser: Boolean) {
             val newVolume = progress / 100.0F
             sound.volume = newVolume
             mediaPlayer.setVolume(newVolume)
         }
 
-        override fun onStartTrackingTouch(p0: SeekBar?) { }
+        override fun onStartTrackingTouch(p0: SeekBar?) {}
         override fun onStopTrackingTouch(seekbar: SeekBar?) {
-            with (volumePrefs.edit()) {
+            with(volumePrefs.edit()) {
                 if (seekbar != null) {
                     putFloat(sound.name, seekbar.progress / 100.0F)
                 }

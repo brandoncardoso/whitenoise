@@ -13,7 +13,12 @@ class LoopMediaPlayer private constructor(
     private lateinit var nextPlayer: MediaPlayer
 
     companion object {
-        fun create(context: Context, resId: Int, attr: AudioAttributes, volume: Float): LoopMediaPlayer {
+        fun create(
+            context: Context,
+            resId: Int,
+            attr: AudioAttributes,
+            volume: Float
+        ): LoopMediaPlayer {
             return LoopMediaPlayer(context, resId, attr, volume)
         }
     }

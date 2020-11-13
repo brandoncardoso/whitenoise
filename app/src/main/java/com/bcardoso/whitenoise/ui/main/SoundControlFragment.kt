@@ -21,12 +21,12 @@ import com.bcardoso.whitenoise.databinding.TimerDialogBinding
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import java.util.concurrent.TimeUnit
 
-class TimerDialogTime(hoursInitial : Int, minutesInitial: Int) {
+class TimerDialogTime(hoursInitial: Int, minutesInitial: Int) {
 
     private var _hours: MutableLiveData<Int> = MutableLiveData(hoursInitial)
     private var _minutes: MutableLiveData<Int> = MutableLiveData(minutesInitial)
-    val hours : LiveData<Int> = _hours
-    val minutes : LiveData<Int> = _minutes
+    val hours: LiveData<Int> = _hours
+    val minutes: LiveData<Int> = _minutes
 
     private val hoursIncrement = 1
     private val minutesIncrement = 5
@@ -47,10 +47,21 @@ class TimerDialogTime(hoursInitial : Int, minutesInitial: Int) {
         return retVal
     }
 
-    fun incrementHours() { _hours.value = increment(_hours.value!!, hoursIncrement, 24) }
-    fun decrementHours() { _hours.value = decrement(_hours.value!!, hoursIncrement, 24, 0) }
-    fun incrementMinutes() { _minutes.value = increment(_minutes.value!!, minutesIncrement, 60) }
-    fun decrementMinutes() { _minutes.value = decrement(_minutes.value!!, minutesIncrement, 60, 0) }
+    fun incrementHours() {
+        _hours.value = increment(_hours.value!!, hoursIncrement, 24)
+    }
+
+    fun decrementHours() {
+        _hours.value = decrement(_hours.value!!, hoursIncrement, 24, 0)
+    }
+
+    fun incrementMinutes() {
+        _minutes.value = increment(_minutes.value!!, minutesIncrement, 60)
+    }
+
+    fun decrementMinutes() {
+        _minutes.value = decrement(_minutes.value!!, minutesIncrement, 60, 0)
+    }
 
     fun getMillis(): Long {
         return (((_hours.value!! * 60) + _minutes.value!!) * 60 * 1000).toLong()
@@ -60,15 +71,15 @@ class TimerDialogTime(hoursInitial : Int, minutesInitial: Int) {
 class SoundControlFragment : Fragment() {
     private lateinit var mContext: Context
 
-    private lateinit var mPlayButton : FloatingActionButton
+    private lateinit var mPlayButton: FloatingActionButton
     private lateinit var mActiveSoundListView: RecyclerView
     private lateinit var mActiveSoundAdapter: ActiveSoundAdapter
 
-    private lateinit var setTimerButton : ActionMenuItemView
-    private lateinit var timeRemainingText : ActionMenuItemView
-    private lateinit var cancelTimerButton : ActionMenuItemView
-    private lateinit var countDownTimer : CountDownTimer
-    private var countDownTimeRemaining : Long? = null
+    private lateinit var setTimerButton: ActionMenuItemView
+    private lateinit var timeRemainingText: ActionMenuItemView
+    private lateinit var cancelTimerButton: ActionMenuItemView
+    private lateinit var countDownTimer: CountDownTimer
+    private var countDownTimeRemaining: Long? = null
     val TIME_REMAINING_KEY = "TIME_REMAINING"
 
     private lateinit var mListener: SoundControlInterface
@@ -77,7 +88,11 @@ class SoundControlFragment : Fragment() {
         fun newInstance() = SoundControlFragment()
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         return inflater.inflate(R.layout.sound_control_fragment, container, false)
     }
 
@@ -97,7 +112,7 @@ class SoundControlFragment : Fragment() {
 
         mPlayButton = view.findViewById(R.id.play_button)
         updatePlayButtonImage(mListener.isPlaying())
-        mPlayButton.setOnClickListener{
+        mPlayButton.setOnClickListener {
             val isPlaying = mListener.togglePlayPause()
             updatePlayButtonImage(isPlaying)
         }
@@ -106,15 +121,15 @@ class SoundControlFragment : Fragment() {
         setTimerButton.setOnClickListener(::openSetTimeDialog)
         timeRemainingText = view.findViewById(R.id.mi_time_remaining)
         cancelTimerButton = view.findViewById(R.id.mi_cancel_timer)
-        cancelTimerButton.setOnClickListener{ cancelTimer() }
+        cancelTimerButton.setOnClickListener { cancelTimer() }
         cancelTimer()
-        val timeRemaining =  arguments?.getLong(TIME_REMAINING_KEY)
+        val timeRemaining = arguments?.getLong(TIME_REMAINING_KEY)
         timeRemaining?.let { if (it > 0) setTimer(it) }
         //val addSoundButton = view.findViewById<ActionMenuItemView>(R.id.add_sound_button)
         //addSoundButton.setOnClickListener{ openAddSoundDialog(view.context) }
     }
 
-    fun getTimeRemaining() : Long? {
+    fun getTimeRemaining(): Long? {
         return countDownTimeRemaining
     }
 
@@ -131,7 +146,8 @@ class SoundControlFragment : Fragment() {
             LayoutInflater.from(view.context),
             R.layout.timer_dialog,
             null,
-            false)
+            false
+        )
         binding.lifecycleOwner = this
         binding.time = TimerDialogTime(0, 0)
 
@@ -153,7 +169,7 @@ class SoundControlFragment : Fragment() {
         timeRemainingText.visibility = View.VISIBLE
         cancelTimerButton.visibility = View.VISIBLE
 
-        countDownTimer = object:CountDownTimer(timeInMillis, 1000) {
+        countDownTimer = object : CountDownTimer(timeInMillis, 1000) {
             override fun onTick(remainingTimeMs: Long) {
                 countDownTimeRemaining = remainingTimeMs
                 timeRemainingText.text = String.format(

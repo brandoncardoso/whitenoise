@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
+
         <variable
             name="time"
             type="com.bcardoso.whitenoise.ui.main.TimerDialogTime" />
@@ -31,8 +32,8 @@
                     android:id="@+id/btn_hour_increase"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:srcCompat="@drawable/ic_baseline_keyboard_arrow_up_24"
-                    android:onClick='@{() -> time.incrementHours()}'/>
+                    android:onClick='@{() -> time.incrementHours()}'
+                    app:srcCompat="@drawable/ic_baseline_keyboard_arrow_up_24" />
 
                 <Space
                     android:layout_width="wrap_content"
@@ -42,8 +43,8 @@
                     android:id="@+id/btn_minute_increase"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:srcCompat="@drawable/ic_baseline_keyboard_arrow_up_24"
-                    android:onClick='@{() -> time.incrementMinutes()}'/>
+                    android:onClick='@{() -> time.incrementMinutes()}'
+                    app:srcCompat="@drawable/ic_baseline_keyboard_arrow_up_24" />
 
             </TableRow>
 
@@ -89,8 +90,8 @@
                     android:id="@+id/btn_hour_decrease"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:srcCompat="@drawable/ic_baseline_keyboard_arrow_down_24"
-                    android:onClick='@{() -> time.decrementHours()}'/>
+                    android:onClick='@{() -> time.decrementHours()}'
+                    app:srcCompat="@drawable/ic_baseline_keyboard_arrow_down_24" />
 
                 <Space
                     android:layout_width="wrap_content"
@@ -100,8 +101,8 @@
                     android:id="@+id/btn_minute_decrease"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:srcCompat="@drawable/ic_baseline_keyboard_arrow_down_24"
-                    android:onClick='@{() -> time.decrementMinutes()}'/>
+                    android:onClick='@{() -> time.decrementMinutes()}'
+                    app:srcCompat="@drawable/ic_baseline_keyboard_arrow_down_24" />
             </TableRow>
         </TableLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
