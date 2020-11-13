@@ -1,12 +1,13 @@
-package com.bcardoso.whitenoise
+package com.bcardoso.whitenoise.adapters
 
-import LoopMediaPlayer
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.bcardoso.whitenoise.activities.Sound
+import com.bcardoso.whitenoise.utils.LoopMediaPlayer
 
 class ActiveSoundAdapter(private var mActiveSounds: MutableList<Pair<Sound, LoopMediaPlayer>>) :
-    RecyclerView.Adapter<ActiveSoundViewHolder>() {
+        RecyclerView.Adapter<ActiveSoundViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ActiveSoundViewHolder {
         val inflater = LayoutInflater.from(parent.context)

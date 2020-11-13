@@ -14,17 +14,19 @@
         android:contentDescription="@string/set_sleep_time_description"
         android:icon="@drawable/ic_baseline_timer_24"
         android:title="@string/set_sleep_time_title"
-        app:showAsAction="always" />
+        app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/mi_cancel_timer"
         android:icon="@drawable/ic_baseline_timer_off_24"
         android:title="Cancel Timer"
-        app:showAsAction="always" />
+        android:visible="false"
+        app:showAsAction="ifRoom" />
 
     <item
         android:id="@+id/mi_time_remaining"
         android:enabled="false"
         android:title=""
+        android:visible="false"
         app:showAsAction="always" />
 </menu>

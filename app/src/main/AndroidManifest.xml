@@ -10,7 +10,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Whitenoise">
         <activity
-            android:name=".WhiteNoiseActivity"
+            android:name=".activities.MainActivity"
             android:label="@string/app_name"
             android:launchMode="singleInstance">
             <intent-filter>

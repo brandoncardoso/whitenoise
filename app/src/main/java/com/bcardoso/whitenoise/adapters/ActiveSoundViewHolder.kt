@@ -1,6 +1,5 @@
-package com.bcardoso.whitenoise
+package com.bcardoso.whitenoise.adapters
 
-import LoopMediaPlayer
 import android.content.Context
 import android.content.SharedPreferences
 import android.view.LayoutInflater
@@ -9,9 +8,12 @@ import android.widget.SeekBar
 import android.widget.SeekBar.OnSeekBarChangeListener
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.bcardoso.whitenoise.R
+import com.bcardoso.whitenoise.activities.Sound
+import com.bcardoso.whitenoise.utils.LoopMediaPlayer
 
 class ActiveSoundViewHolder(inflater: LayoutInflater, parent: ViewGroup) :
-    RecyclerView.ViewHolder(inflater.inflate(R.layout.active_sound_list_item, parent, false)) {
+        RecyclerView.ViewHolder(inflater.inflate(R.layout.active_sound_list_item, parent, false)) {
     private var mNameView: TextView = itemView.findViewById(R.id.active_sound_list_item_name)
     private var mVolumeControl: SeekBar = itemView.findViewById(R.id.active_sound_list_item_volume)
     val volumePrefs = parent.context.getSharedPreferences("volumes", Context.MODE_PRIVATE)

@@ -1,6 +1,5 @@
-package com.bcardoso.whitenoise
+package com.bcardoso.whitenoise.activities
 
-import LoopMediaPlayer
 import android.annotation.SuppressLint
 import android.app.Notification
 import android.app.NotificationChannel
@@ -10,23 +9,40 @@ import android.content.*
 import android.media.AudioAttributes
 import android.os.Build
 import android.os.Bundle
+import android.os.CountDownTimer
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuItem
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import com.bcardoso.whitenoise.ui.main.SoundControlFragment
+import androidx.databinding.DataBindingUtil
+import com.bcardoso.whitenoise.R
+import com.bcardoso.whitenoise.databinding.TimerDialogBinding
+import com.bcardoso.whitenoise.fragments.SoundControlFragment
+import com.bcardoso.whitenoise.interfaces.SoundControlInterface
+import com.bcardoso.whitenoise.utils.LoopMediaPlayer
+import com.bcardoso.whitenoise.utils.TimerDialogTime
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import java.util.concurrent.TimeUnit
 
 data class Sound(var name: String, var id: Int, var initialVolume: Float = 0F) {
     var volume = initialVolume
 }
 
-class WhiteNoiseActivity : AppCompatActivity(), SoundControlInterface {
+class MainActivity : AppCompatActivity(), SoundControlInterface {
     private lateinit var volumePrefs: SharedPreferences
 
     private val NOTIFICATION_CHANNEL_ID = "whitenoise"
     private val NOTIFICATION_ID = 0
     private lateinit var mNotificationManagerCompat: NotificationManagerCompat
     private lateinit var notificationBuilder: NotificationCompat.Builder
+
+    private lateinit var mPlayButton: FloatingActionButton
+    private lateinit var timeRemainingText: MenuItem
+    private lateinit var cancelTimerButton: MenuItem
+    private lateinit var countDownTimer: CountDownTimer
 
     private var mIsPlaying = false
     private val mActiveSounds = mutableListOf<Pair<Sound, LoopMediaPlayer>>()
@@ -48,7 +64,8 @@ class WhiteNoiseActivity : AppCompatActivity(), SoundControlInterface {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.`white_noise_activity`)
+        setContentView(R.layout.white_noise_activity)
+        setSupportActionBar(findViewById(R.id.bottomAppBar))
 
         volumePrefs = getSharedPreferences("volumes", Context.MODE_PRIVATE)
 
@@ -56,6 +73,13 @@ class WhiteNoiseActivity : AppCompatActivity(), SoundControlInterface {
             supportFragmentManager.beginTransaction()
                 .replace(R.id.container, SoundControlFragment.newInstance())
                 .commitNow()
+        }
+
+        mPlayButton = findViewById(R.id.play_button)
+        updatePlayButtonImage()
+        mPlayButton.setOnClickListener {
+            togglePlayPause()
+            updatePlayButtonImage()
         }
 
         mSounds = listOf(
@@ -79,23 +103,39 @@ class WhiteNoiseActivity : AppCompatActivity(), SoundControlInterface {
 
         registerReceiver(receiver, IntentFilter(ACTION.PLAY_TOGGLE.id))
 
-        mNotificationManagerCompat = NotificationManagerCompat.from(applicationContext);
+        mNotificationManagerCompat = NotificationManagerCompat.from(applicationContext)
         createNotificationChannel()
         notificationBuilder = generateNotificationBuilder()
         updatePlayToggleAction()
         updateNotification()
     }
 
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        val inflater = menuInflater
+        inflater.inflate(R.menu.bottom_app_bar, menu)
+        cancelTimerButton = menu.findItem(R.id.mi_cancel_timer)
+        timeRemainingText = menu.findItem(R.id.mi_time_remaining)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.mi_set_timer -> openSetTimerDialog()
+            R.id.mi_cancel_timer -> cancelTimer()
+            R.id.mi_time_remaining -> return true
+            else                   -> return super.onOptionsItemSelected(item)
+        }
+        return true
+    }
+
     private fun startAllActiveSounds() {
         mActiveSounds.forEach { (_, mp) -> mp.start() }
+        mIsPlaying = true
     }
 
     private fun pauseAllActiveSounds() {
         mActiveSounds.forEach { (_, mp) -> mp.pause() }
-    }
-
-    private fun stopAllActiveSounds() {
-        mActiveSounds.forEach { (_, mp) -> mp.stop() }
+        mIsPlaying = false
     }
 
     private fun createNotificationChannel() {
@@ -112,7 +152,7 @@ class WhiteNoiseActivity : AppCompatActivity(), SoundControlInterface {
                 }
             // Register the channel with the system
             val notificationManager: NotificationManager =
-                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+                    getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
     }
@@ -139,12 +179,20 @@ class WhiteNoiseActivity : AppCompatActivity(), SoundControlInterface {
         notificationBuilder.mActions = arrayListOf(playToggleAction)
     }
 
+    private fun updatePlayButtonImage() {
+        if (mIsPlaying) {
+            mPlayButton.setImageResource(R.drawable.ic_baseline_pause_24)
+        } else {
+            mPlayButton.setImageResource(R.drawable.ic_baseline_play_arrow_24)
+        }
+    }
+
     private fun notifyNotificationManager(notificationId: Int, notification: Notification) {
         mNotificationManagerCompat.notify(notificationId, notification)
     }
 
     private fun generateNotificationBuilder(): NotificationCompat.Builder {
-        val notifyIntent = Intent(this, WhiteNoiseActivity::class.java).apply {
+        val notifyIntent = Intent(this, MainActivity::class.java).apply {
             action = Intent.ACTION_MAIN
             addCategory(Intent.CATEGORY_LAUNCHER)
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
@@ -169,46 +217,79 @@ class WhiteNoiseActivity : AppCompatActivity(), SoundControlInterface {
             .setWhen(0)
     }
 
-    override fun isPlaying(): Boolean {
-        return mIsPlaying
-    }
-
     override fun getActiveSounds(): MutableList<Pair<Sound, LoopMediaPlayer>> {
         return mActiveSounds
     }
 
-    override fun togglePlayPause(): Boolean {
+    fun togglePlayPause() {
         if (mIsPlaying) {
             pauseAllActiveSounds()
         } else {
             startAllActiveSounds()
         }
-        mIsPlaying = !mIsPlaying
         updatePlayToggleAction()
         updateNotification()
-        updateSoundControlFragment()
-        return mIsPlaying
     }
 
-    override fun updateSoundControlFragment() {
-        val curFrag =
-            supportFragmentManager.findFragmentById(R.id.container) as SoundControlFragment
-        val newFrag = SoundControlFragment()
-        newFrag.arguments = Bundle().apply {
-            curFrag.getTimeRemaining()?.let { putLong(curFrag.TIME_REMAINING_KEY, it) }
+    private fun cancelTimer() {
+        if (this::countDownTimer.isInitialized) countDownTimer.cancel()
+        timeRemainingText.isVisible = false
+        cancelTimerButton.isVisible = false
+        notificationBuilder.setContentText(null)
+        updateNotification()
+    }
+
+    private fun openSetTimerDialog() {
+        val binding = DataBindingUtil.inflate<TimerDialogBinding>(
+            LayoutInflater.from(this),
+            R.layout.timer_dialog,
+            null,
+            false
+        )
+        binding.lifecycleOwner = this
+        binding.time = TimerDialogTime(0, 0)
+
+        AlertDialog.Builder(this)
+            .setView(binding.root)
+            .setCancelable(true)
+            .setPositiveButton("Start") { dialog, _ ->
+                binding.time?.let { setTimer(it.getMillis()) }
+                dialog.dismiss()
+            }
+            .setNegativeButton("Cancel") { dialog, _ -> dialog.cancel() }
+            .setTitle("Stop in...")
+            .create()
+            .show()
+    }
+
+    private fun setTimer(timeInMillis: Long) {
+        cancelTimer()
+        timeRemainingText.isVisible = true
+        cancelTimerButton.isVisible = true
+
+        countDownTimer = object : CountDownTimer(timeInMillis, 1000) {
+            override fun onTick(remainingTimeMs: Long) {
+                timeRemainingText.title = String.format(
+                    "%02d:%02d:%02d", // HH:MM:SS
+                    TimeUnit.MILLISECONDS.toHours(remainingTimeMs), // hours
+                    TimeUnit.MILLISECONDS.toMinutes(remainingTimeMs) - // minutes
+                            TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(remainingTimeMs)),
+                    TimeUnit.MILLISECONDS.toSeconds(remainingTimeMs) -
+                            TimeUnit.MINUTES.toSeconds(
+                                TimeUnit.MILLISECONDS.toMinutes(
+                                    remainingTimeMs
+                                )
+                            )
+                )
+                onTimerUpdate(remainingTimeMs)
+            }
+
+            override fun onFinish() = onTimerFinish()
         }
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.container, newFrag)
-            .commitNow()
+        countDownTimer.start()
     }
 
-    override fun pauseAllSounds() {
-        pauseAllActiveSounds()
-        mIsPlaying = false
-        updateSoundControlFragment()
-    }
-
-    override fun onTimerUpdate(remainingTimeMs: Long) {
+    fun onTimerUpdate(remainingTimeMs: Long) {
         notificationBuilder.setContentText(
             String.format(
                 "%02d:%02d:%02d", // HH:MM:SS
@@ -226,14 +307,11 @@ class WhiteNoiseActivity : AppCompatActivity(), SoundControlInterface {
         updateNotification()
     }
 
-    override fun onTimerCancel() {
-        notificationBuilder.setContentText(null)
-        updateNotification()
-    }
-
-    override fun onTimerFinish() {
+    fun onTimerFinish() {
+        timeRemainingText.isVisible = false
+        cancelTimerButton.isVisible = false
+        pauseAllActiveSounds()
         notificationBuilder.setContentText("Timer finished.")
-        pauseAllSounds()
         updateNotification()
     }
 

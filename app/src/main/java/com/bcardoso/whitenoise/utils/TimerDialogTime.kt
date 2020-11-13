@@ -1,4 +1,4 @@
-package com.bcardoso.whitenoise
+package com.bcardoso.whitenoise.utils
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

@@ -1,3 +1,5 @@
+package com.bcardoso.whitenoise.utils
+
 import android.content.Context
 import android.media.AudioAttributes
 import android.media.MediaPlayer
@@ -13,12 +15,7 @@ class LoopMediaPlayer private constructor(
     private lateinit var nextPlayer: MediaPlayer
 
     companion object {
-        fun create(
-            context: Context,
-            resId: Int,
-            attr: AudioAttributes,
-            volume: Float
-        ): LoopMediaPlayer {
+        fun create(context: Context, resId: Int, attr: AudioAttributes, volume: Float): LoopMediaPlayer {
             return LoopMediaPlayer(context, resId, attr, volume)
         }
     }
@@ -36,13 +33,12 @@ class LoopMediaPlayer private constructor(
         currentPlayer.setOnCompletionListener(onCompletionListener)
     }
 
-    private val onCompletionListener =
-        OnCompletionListener { mediaPlayer ->
-            mediaPlayer.reset()
-            mediaPlayer.release()
-            currentPlayer = nextPlayer
-            createNextMediaPlayer()
-        }
+    private val onCompletionListener = OnCompletionListener { mediaPlayer ->
+        mediaPlayer.reset()
+        mediaPlayer.release()
+        currentPlayer = nextPlayer
+        createNextMediaPlayer()
+    }
 
     fun start() {
         currentPlayer.start()

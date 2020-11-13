@@ -6,7 +6,7 @@
 
         <variable
             name="time"
-            type="com.bcardoso.whitenoise.TimerDialogTime" />
+            type="com.bcardoso.whitenoise.utils.TimerDialogTime" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
