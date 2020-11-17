@@ -84,7 +84,9 @@ class MainActivity : AppCompatActivity(), SoundControlInterface {
 
         mSounds = listOf(
             Sound("Rain", R.raw.rain, volumePrefs.getFloat("Rain", 0F)),
-            Sound("Thunder", R.raw.thunder, volumePrefs.getFloat("Thunder", 0F))
+            Sound("Thunder", R.raw.thunder, volumePrefs.getFloat("Thunder", 0F)),
+            Sound("Forest", R.raw.forest, volumePrefs.getFloat("Forest", 0F)),
+            Sound("Waves", R.raw.forest, volumePrefs.getFloat("Waves", 0F))
         )
 
         val audioAttributes = AudioAttributes.Builder()
