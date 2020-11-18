@@ -64,7 +64,7 @@ class MainActivity : AppCompatActivity(), SoundControlInterface {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.white_noise_activity)
+        setContentView(R.layout.main_activity)
         setSupportActionBar(findViewById(R.id.bottomAppBar))
 
         volumePrefs = getSharedPreferences("volumes", Context.MODE_PRIVATE)
