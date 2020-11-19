@@ -11,7 +11,6 @@ import android.os.Build
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.view.LayoutInflater
-import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -24,6 +23,7 @@ import com.bcardoso.whitenoise.fragments.SoundControlFragment
 import com.bcardoso.whitenoise.interfaces.SoundControlInterface
 import com.bcardoso.whitenoise.utils.LoopMediaPlayer
 import com.bcardoso.whitenoise.utils.TimerDialogTime
+import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import java.util.concurrent.TimeUnit
 
@@ -39,9 +39,11 @@ class MainActivity : AppCompatActivity(), SoundControlInterface {
     private lateinit var mNotificationManagerCompat: NotificationManagerCompat
     private lateinit var notificationBuilder: NotificationCompat.Builder
 
+    private lateinit var topAppBar: androidx.appcompat.widget.Toolbar
+    private lateinit var bottomAppBar: BottomAppBar
     private lateinit var mPlayButton: FloatingActionButton
-    private lateinit var timeRemainingText: MenuItem
     private lateinit var cancelTimerButton: MenuItem
+    private lateinit var timeRemainingText: MenuItem
     private lateinit var countDownTimer: CountDownTimer
 
     private var mIsPlaying = false
@@ -65,7 +67,27 @@ class MainActivity : AppCompatActivity(), SoundControlInterface {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
-        setSupportActionBar(findViewById(R.id.bottomAppBar))
+
+        topAppBar = findViewById(R.id.topAppBar)
+        setSupportActionBar(findViewById(R.id.topAppBar))
+
+        bottomAppBar = findViewById(R.id.bottomAppBar)
+        cancelTimerButton = bottomAppBar.menu.findItem(R.id.mi_cancel_timer)
+        timeRemainingText = bottomAppBar.menu.findItem(R.id.mi_time_remaining)
+        bottomAppBar.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.mi_set_timer -> {
+                    openSetTimerDialog()
+                    true
+                }
+                R.id.mi_cancel_timer -> {
+                    cancelTimer()
+                    true
+                }
+                R.id.mi_time_remaining -> true
+                else                   -> false
+            }
+        }
 
         volumePrefs = getSharedPreferences("volumes", Context.MODE_PRIVATE)
 
@@ -110,24 +132,6 @@ class MainActivity : AppCompatActivity(), SoundControlInterface {
         notificationBuilder = generateNotificationBuilder()
         updatePlayToggleAction()
         updateNotification()
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        val inflater = menuInflater
-        inflater.inflate(R.menu.bottom_app_bar, menu)
-        cancelTimerButton = menu.findItem(R.id.mi_cancel_timer)
-        timeRemainingText = menu.findItem(R.id.mi_time_remaining)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            R.id.mi_set_timer -> openSetTimerDialog()
-            R.id.mi_cancel_timer -> cancelTimer()
-            R.id.mi_time_remaining -> return true
-            else                   -> return super.onOptionsItemSelected(item)
-        }
-        return true
     }
 
     private fun startAllActiveSounds() {
