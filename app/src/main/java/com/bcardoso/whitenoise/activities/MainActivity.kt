@@ -10,21 +10,15 @@ import android.media.AudioAttributes
 import android.os.Build
 import android.os.Bundle
 import android.os.CountDownTimer
-import android.view.LayoutInflater
+import android.view.Menu
 import android.view.MenuItem
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.databinding.DataBindingUtil
 import com.bcardoso.whitenoise.R
-import com.bcardoso.whitenoise.databinding.TimerDialogBinding
-import com.bcardoso.whitenoise.fragments.SoundControlFragment
 import com.bcardoso.whitenoise.interfaces.SoundControlInterface
 import com.bcardoso.whitenoise.utils.LoopMediaPlayer
-import com.bcardoso.whitenoise.utils.TimerDialogTime
 import com.google.android.material.bottomappbar.BottomAppBar
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import java.util.concurrent.TimeUnit
 
 data class Sound(var name: String, var id: Int, var initialVolume: Float = 0F) {
@@ -41,9 +35,6 @@ class MainActivity : AppCompatActivity(), SoundControlInterface {
 
     private lateinit var topAppBar: androidx.appcompat.widget.Toolbar
     private lateinit var bottomAppBar: BottomAppBar
-    private lateinit var mPlayButton: FloatingActionButton
-    private lateinit var cancelTimerButton: MenuItem
-    private lateinit var timeRemainingText: MenuItem
     private lateinit var countDownTimer: CountDownTimer
 
     private var mIsPlaying = false
@@ -71,38 +62,7 @@ class MainActivity : AppCompatActivity(), SoundControlInterface {
         topAppBar = findViewById(R.id.topAppBar)
         setSupportActionBar(findViewById(R.id.topAppBar))
 
-        bottomAppBar = findViewById(R.id.bottomAppBar)
-        cancelTimerButton = bottomAppBar.menu.findItem(R.id.mi_cancel_timer)
-        timeRemainingText = bottomAppBar.menu.findItem(R.id.mi_time_remaining)
-        bottomAppBar.setOnMenuItemClickListener { menuItem ->
-            when (menuItem.itemId) {
-                R.id.mi_set_timer -> {
-                    openSetTimerDialog()
-                    true
-                }
-                R.id.mi_cancel_timer -> {
-                    cancelTimer()
-                    true
-                }
-                R.id.mi_time_remaining -> true
-                else                   -> false
-            }
-        }
-
         volumePrefs = getSharedPreferences("volumes", Context.MODE_PRIVATE)
-
-        if (savedInstanceState == null) {
-            supportFragmentManager.beginTransaction()
-                .replace(R.id.container, SoundControlFragment.newInstance())
-                .commitNow()
-        }
-
-        mPlayButton = findViewById(R.id.play_button)
-        updatePlayButtonImage()
-        mPlayButton.setOnClickListener {
-            togglePlayPause()
-            updatePlayButtonImage()
-        }
 
         mSounds = listOf(
             Sound("Rain", R.raw.rain, volumePrefs.getFloat("Rain", 0F)),
@@ -132,6 +92,11 @@ class MainActivity : AppCompatActivity(), SoundControlInterface {
         notificationBuilder = generateNotificationBuilder()
         updatePlayToggleAction()
         updateNotification()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.top_app_bar, menu)
+        return true
     }
 
     private fun startAllActiveSounds() {
@@ -185,17 +150,11 @@ class MainActivity : AppCompatActivity(), SoundControlInterface {
         notificationBuilder.mActions = arrayListOf(playToggleAction)
     }
 
-    private fun updatePlayButtonImage() {
-        if (mIsPlaying) {
-            mPlayButton.setImageResource(R.drawable.ic_baseline_pause_24)
-        } else {
-            mPlayButton.setImageResource(R.drawable.ic_baseline_play_arrow_24)
-        }
-    }
-
     private fun notifyNotificationManager(notificationId: Int, notification: Notification) {
         mNotificationManagerCompat.notify(notificationId, notification)
     }
+
+    override fun isPlaying(): Boolean = mIsPlaying
 
     private fun generateNotificationBuilder(): NotificationCompat.Builder {
         val notifyIntent = Intent(this, MainActivity::class.java).apply {
@@ -227,7 +186,7 @@ class MainActivity : AppCompatActivity(), SoundControlInterface {
         return mActiveSounds
     }
 
-    fun togglePlayPause() {
+    override fun togglePlayPause() {
         if (mIsPlaying) {
             pauseAllActiveSounds()
         } else {
@@ -237,86 +196,39 @@ class MainActivity : AppCompatActivity(), SoundControlInterface {
         updateNotification()
     }
 
-    private fun cancelTimer() {
+    override fun cancelTimer() {
         if (this::countDownTimer.isInitialized) countDownTimer.cancel()
-        timeRemainingText.isVisible = false
-        cancelTimerButton.isVisible = false
         notificationBuilder.setContentText(null)
         updateNotification()
     }
 
-    private fun openSetTimerDialog() {
-        val binding = DataBindingUtil.inflate<TimerDialogBinding>(
-            LayoutInflater.from(this),
-            R.layout.timer_dialog,
-            null,
-            false
-        )
-        binding.lifecycleOwner = this
-        binding.time = TimerDialogTime(0, 0)
-
-        AlertDialog.Builder(this)
-            .setView(binding.root)
-            .setCancelable(true)
-            .setPositiveButton("Start") { dialog, _ ->
-                binding.time?.let { setTimer(it.getMillis()) }
-                dialog.dismiss()
-            }
-            .setNegativeButton("Cancel") { dialog, _ -> dialog.cancel() }
-            .setTitle("Stop in...")
-            .create()
-            .show()
-    }
-
-    private fun setTimer(timeInMillis: Long) {
+    override fun setTimer(millis: Long, timerText: MenuItem) {
         cancelTimer()
-        timeRemainingText.isVisible = true
-        cancelTimerButton.isVisible = true
 
-        countDownTimer = object : CountDownTimer(timeInMillis, 1000) {
-            override fun onTick(remainingTimeMs: Long) {
-                timeRemainingText.title = String.format(
-                    "%02d:%02d:%02d", // HH:MM:SS
-                    TimeUnit.MILLISECONDS.toHours(remainingTimeMs), // hours
-                    TimeUnit.MILLISECONDS.toMinutes(remainingTimeMs) - // minutes
-                            TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(remainingTimeMs)),
-                    TimeUnit.MILLISECONDS.toSeconds(remainingTimeMs) -
-                            TimeUnit.MINUTES.toSeconds(
-                                TimeUnit.MILLISECONDS.toMinutes(
-                                    remainingTimeMs
-                                )
-                            )
-                )
-                onTimerUpdate(remainingTimeMs)
-            }
-
-            override fun onFinish() = onTimerFinish()
+        countDownTimer = object : CountDownTimer(millis, 1000) {
+            override fun onTick(remainingTimeMs: Long) = onTimerUpdate(remainingTimeMs, timerText)
+            override fun onFinish() = onTimerFinish(timerText)
         }
         countDownTimer.start()
     }
 
-    fun onTimerUpdate(remainingTimeMs: Long) {
-        notificationBuilder.setContentText(
-            String.format(
-                "%02d:%02d:%02d", // HH:MM:SS
-                TimeUnit.MILLISECONDS.toHours(remainingTimeMs), // hours
-                TimeUnit.MILLISECONDS.toMinutes(remainingTimeMs) - // minutes
-                        TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(remainingTimeMs)),
-                TimeUnit.MILLISECONDS.toSeconds(remainingTimeMs) -
-                        TimeUnit.MINUTES.toSeconds(
-                            TimeUnit.MILLISECONDS.toMinutes(
-                                remainingTimeMs
-                            )
-                        )
-            )
-        )
+    fun onTimerUpdate(remainingTimeMs: Long, timerText: MenuItem) {
+        val timerString = String.format(
+            "%02d:%02d:%02d", // HH:MM:SS
+            TimeUnit.MILLISECONDS.toHours(remainingTimeMs), // hours
+            TimeUnit.MILLISECONDS.toMinutes(remainingTimeMs) - // minutes
+                    TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(remainingTimeMs)),
+            TimeUnit.MILLISECONDS.toSeconds(remainingTimeMs) -
+                    TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(remainingTimeMs)))
+
+        timerText.title = timerString
+        notificationBuilder.setContentText(timerString)
         updateNotification()
     }
 
-    fun onTimerFinish() {
-        timeRemainingText.isVisible = false
-        cancelTimerButton.isVisible = false
+    fun onTimerFinish(timerText: MenuItem) {
         pauseAllActiveSounds()
+        timerText.title = null
         notificationBuilder.setContentText("Timer finished.")
         updateNotification()
     }
