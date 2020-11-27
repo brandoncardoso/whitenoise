@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bcardoso.whitenoise.R
@@ -16,11 +17,14 @@ import com.bcardoso.whitenoise.adapters.ActiveSoundAdapter
 import com.bcardoso.whitenoise.databinding.TimerDialogBinding
 import com.bcardoso.whitenoise.interfaces.SoundControlInterface
 import com.bcardoso.whitenoise.utils.TimerDialogTime
+import com.bcardoso.whitenoise.viewmodels.MainViewModel
 import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class SoundControlFragment : Fragment() {
     private lateinit var mContext: Context
+
+    private val viewModel: MainViewModel by activityViewModels()
 
     private lateinit var mActiveSoundListView: RecyclerView
     private lateinit var mActiveSoundAdapter: ActiveSoundAdapter
@@ -49,6 +53,8 @@ class SoundControlFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        viewModel.isPlaying.observe(viewLifecycleOwner, ::updatePlayButtonImage)
+
         mActiveSoundListView = view.findViewById(R.id.active_sound_list)
         mActiveSoundListView.layoutManager = LinearLayoutManager(mContext)
         mActiveSoundAdapter = ActiveSoundAdapter(mListener.getActiveSounds())
@@ -59,10 +65,8 @@ class SoundControlFragment : Fragment() {
         timeRemainingText = bottomAppBar.menu.findItem(R.id.mi_time_remaining)
 
         mPlayButton = view.findViewById(R.id.play_button)
-        updatePlayButtonImage()
         mPlayButton.setOnClickListener {
-            mListener.togglePlayPause()
-            updatePlayButtonImage()
+            viewModel.togglePlaying()
         }
 
         bottomAppBar.setOnMenuItemClickListener { menuItem ->
@@ -114,8 +118,8 @@ class SoundControlFragment : Fragment() {
         }
     }
 
-    private fun updatePlayButtonImage() {
-        if (mListener.isPlaying()) {
+    private fun updatePlayButtonImage(isPlaying: Boolean) {
+        if (isPlaying) {
             mPlayButton.setImageResource(R.drawable.ic_baseline_pause_24)
         } else {
             mPlayButton.setImageResource(R.drawable.ic_baseline_play_arrow_24)

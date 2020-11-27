@@ -12,13 +12,14 @@ import android.os.Bundle
 import android.os.CountDownTimer
 import android.view.Menu
 import android.view.MenuItem
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.bcardoso.whitenoise.R
 import com.bcardoso.whitenoise.interfaces.SoundControlInterface
 import com.bcardoso.whitenoise.utils.LoopMediaPlayer
-import com.google.android.material.bottomappbar.BottomAppBar
+import com.bcardoso.whitenoise.viewmodels.MainViewModel
 import java.util.concurrent.TimeUnit
 
 data class Sound(var name: String, var id: Int, var initialVolume: Float = 0F) {
@@ -27,6 +28,7 @@ data class Sound(var name: String, var id: Int, var initialVolume: Float = 0F) {
 
 class MainActivity : AppCompatActivity(), SoundControlInterface {
     private lateinit var volumePrefs: SharedPreferences
+    private val viewModel: MainViewModel by viewModels()
 
     private val NOTIFICATION_CHANNEL_ID = "whitenoise"
     private val NOTIFICATION_ID = 0
@@ -36,7 +38,6 @@ class MainActivity : AppCompatActivity(), SoundControlInterface {
     private lateinit var topAppBar: androidx.appcompat.widget.Toolbar
     private lateinit var countDownTimer: CountDownTimer
 
-    private var mIsPlaying = false
     private val mActiveSounds = mutableListOf<Pair<Sound, LoopMediaPlayer>>()
     private lateinit var mSounds: List<Sound>
 
@@ -48,7 +49,7 @@ class MainActivity : AppCompatActivity(), SoundControlInterface {
         override fun onReceive(context: Context?, intent: Intent?) {
             when (intent?.action) {
                 ACTION.PLAY_TOGGLE.id -> {
-                    togglePlayPause()
+                    viewModel.togglePlaying()
                 }
             }
         }
@@ -57,6 +58,8 @@ class MainActivity : AppCompatActivity(), SoundControlInterface {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
+
+        viewModel.isPlaying.observe(this, ::togglePlayPause)
 
         topAppBar = findViewById(R.id.topAppBar)
         setSupportActionBar(findViewById(R.id.topAppBar))
@@ -89,8 +92,6 @@ class MainActivity : AppCompatActivity(), SoundControlInterface {
         mNotificationManagerCompat = NotificationManagerCompat.from(applicationContext)
         createNotificationChannel()
         notificationBuilder = generateNotificationBuilder()
-        updatePlayToggleAction()
-        updateNotification()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -100,12 +101,10 @@ class MainActivity : AppCompatActivity(), SoundControlInterface {
 
     private fun startAllActiveSounds() {
         mActiveSounds.forEach { (_, mp) -> mp.start() }
-        mIsPlaying = true
     }
 
     private fun pauseAllActiveSounds() {
         mActiveSounds.forEach { (_, mp) -> mp.pause() }
-        mIsPlaying = false
     }
 
     private fun createNotificationChannel() {
@@ -132,7 +131,7 @@ class MainActivity : AppCompatActivity(), SoundControlInterface {
     }
 
     @SuppressLint("RestrictedApi")
-    private fun updatePlayToggleAction() {
+    private fun updatePlayToggleAction(isPlaying: Boolean) {
         val playTogglePendingIntent = PendingIntent.getBroadcast(
             this,
             System.currentTimeMillis().toInt(),
@@ -140,8 +139,8 @@ class MainActivity : AppCompatActivity(), SoundControlInterface {
             0
         )
         val playToggleAction = NotificationCompat.Action.Builder(
-            if (mIsPlaying) R.drawable.ic_baseline_pause_24 else R.drawable.ic_baseline_play_arrow_24,
-            if (mIsPlaying) "Pause" else "Play",
+            if (isPlaying) R.drawable.ic_baseline_pause_24 else R.drawable.ic_baseline_play_arrow_24,
+            if (isPlaying) "Pause" else "Play",
             playTogglePendingIntent
         )
             .build()
@@ -152,8 +151,6 @@ class MainActivity : AppCompatActivity(), SoundControlInterface {
     private fun notifyNotificationManager(notificationId: Int, notification: Notification) {
         mNotificationManagerCompat.notify(notificationId, notification)
     }
-
-    override fun isPlaying(): Boolean = mIsPlaying
 
     private fun generateNotificationBuilder(): NotificationCompat.Builder {
         val notifyIntent = Intent(this, MainActivity::class.java).apply {
@@ -185,13 +182,13 @@ class MainActivity : AppCompatActivity(), SoundControlInterface {
         return mActiveSounds
     }
 
-    override fun togglePlayPause() {
-        if (mIsPlaying) {
-            pauseAllActiveSounds()
-        } else {
+    private fun togglePlayPause(isPlaying: Boolean) {
+        if (isPlaying) {
             startAllActiveSounds()
+        } else {
+            pauseAllActiveSounds()
         }
-        updatePlayToggleAction()
+        updatePlayToggleAction(isPlaying)
         updateNotification()
     }
 

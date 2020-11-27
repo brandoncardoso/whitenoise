@@ -8,6 +8,4 @@ interface SoundControlInterface {
     fun getActiveSounds(): MutableList<Pair<Sound, LoopMediaPlayer>>
     fun setTimer(millis: Long, timerText: MenuItem)
     fun cancelTimer()
-    fun isPlaying(): Boolean
-    fun togglePlayPause()
 }
