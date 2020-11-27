@@ -41,8 +41,10 @@ class LoopMediaPlayer private constructor(
     }
 
     fun start() {
-        currentPlayer.start()
-        currentPlayer.setOnCompletionListener(onCompletionListener)
+        if (!currentPlayer.isPlaying) {
+            currentPlayer.start()
+            currentPlayer.setOnCompletionListener(onCompletionListener)
+        }
     }
 
     fun stop() {
@@ -50,7 +52,9 @@ class LoopMediaPlayer private constructor(
     }
 
     fun pause() {
-        currentPlayer.pause()
+        if (currentPlayer.isPlaying) {
+            currentPlayer.pause()
+        }
     }
 
     fun setVolume(newVolume: Float) {
