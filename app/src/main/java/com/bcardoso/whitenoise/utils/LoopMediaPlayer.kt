@@ -28,7 +28,6 @@ class LoopMediaPlayer private constructor(
 
     private fun createNextMediaPlayer() {
         nextPlayer = MediaPlayer.create(context, resId, audioAttributes, 1)
-        nextPlayer.setVolume(volume, volume)
         currentPlayer.setNextMediaPlayer(nextPlayer)
         currentPlayer.setOnCompletionListener(onCompletionListener)
     }
@@ -36,6 +35,7 @@ class LoopMediaPlayer private constructor(
     private val onCompletionListener = OnCompletionListener { mediaPlayer ->
         mediaPlayer.reset()
         mediaPlayer.release()
+        nextPlayer.setVolume(volume, volume)
         currentPlayer = nextPlayer
         createNextMediaPlayer()
     }
