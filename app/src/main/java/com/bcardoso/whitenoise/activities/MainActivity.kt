@@ -34,7 +34,6 @@ class MainActivity : AppCompatActivity(), SoundControlInterface {
     private lateinit var notificationBuilder: NotificationCompat.Builder
 
     private lateinit var topAppBar: androidx.appcompat.widget.Toolbar
-    private lateinit var bottomAppBar: BottomAppBar
     private lateinit var countDownTimer: CountDownTimer
 
     private var mIsPlaying = false
