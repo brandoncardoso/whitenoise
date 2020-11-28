@@ -9,9 +9,7 @@ import android.content.*
 import android.media.AudioAttributes
 import android.os.Build
 import android.os.Bundle
-import android.os.CountDownTimer
 import android.view.Menu
-import android.view.MenuItem
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
@@ -36,7 +34,6 @@ class MainActivity : AppCompatActivity(), SoundControlInterface {
     private lateinit var notificationBuilder: NotificationCompat.Builder
 
     private lateinit var topAppBar: androidx.appcompat.widget.Toolbar
-    private lateinit var countDownTimer: CountDownTimer
 
     private val mActiveSounds = mutableListOf<Pair<Sound, LoopMediaPlayer>>()
     private lateinit var mSounds: List<Sound>
@@ -60,6 +57,8 @@ class MainActivity : AppCompatActivity(), SoundControlInterface {
         setContentView(R.layout.main_activity)
 
         viewModel.isPlaying.observe(this, ::togglePlayPause)
+        viewModel.sleepTimerTimeRemaining.observe(this, ::onSleepTimerUpdate)
+        viewModel.isSleepTimerFinished.observe(this, ::onSleepTimerFinished)
 
         topAppBar = findViewById(R.id.topAppBar)
         setSupportActionBar(findViewById(R.id.topAppBar))
@@ -192,23 +191,12 @@ class MainActivity : AppCompatActivity(), SoundControlInterface {
         updateNotification()
     }
 
-    override fun cancelTimer() {
-        if (this::countDownTimer.isInitialized) countDownTimer.cancel()
+    override fun onCancelSleepTimer() {
         notificationBuilder.setContentText(null)
         updateNotification()
     }
 
-    override fun setTimer(millis: Long, timerText: MenuItem) {
-        cancelTimer()
-
-        countDownTimer = object : CountDownTimer(millis, 1000) {
-            override fun onTick(remainingTimeMs: Long) = onTimerUpdate(remainingTimeMs, timerText)
-            override fun onFinish() = onTimerFinish(timerText)
-        }
-        countDownTimer.start()
-    }
-
-    fun onTimerUpdate(remainingTimeMs: Long, timerText: MenuItem) {
+    private fun onSleepTimerUpdate(remainingTimeMs: Long) {
         val timerString = String.format(
             "%02d:%02d:%02d", // HH:MM:SS
             TimeUnit.MILLISECONDS.toHours(remainingTimeMs), // hours
@@ -217,16 +205,16 @@ class MainActivity : AppCompatActivity(), SoundControlInterface {
             TimeUnit.MILLISECONDS.toSeconds(remainingTimeMs) -
                     TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(remainingTimeMs)))
 
-        timerText.title = timerString
         notificationBuilder.setContentText(timerString)
         updateNotification()
     }
 
-    fun onTimerFinish(timerText: MenuItem) {
-        pauseAllActiveSounds()
-        timerText.title = null
-        notificationBuilder.setContentText("Timer finished.")
-        updateNotification()
+    private fun onSleepTimerFinished(isFinished: Boolean) {
+        if (isFinished) {
+            pauseAllActiveSounds()
+            notificationBuilder.setContentText("Timer finished.")
+            updateNotification()
+        }
     }
 
     override fun onDestroy() {

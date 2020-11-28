@@ -20,6 +20,7 @@ import com.bcardoso.whitenoise.utils.TimerDialogTime
 import com.bcardoso.whitenoise.viewmodels.MainViewModel
 import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import java.util.concurrent.TimeUnit
 
 class SoundControlFragment : Fragment() {
     private lateinit var mContext: Context
@@ -54,6 +55,8 @@ class SoundControlFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         viewModel.isPlaying.observe(viewLifecycleOwner, ::updatePlayButtonImage)
+        viewModel.sleepTimerTimeRemaining.observe(viewLifecycleOwner, ::updateTimerText)
+        viewModel.isSleepTimerFinished.observe(viewLifecycleOwner, ::onSleepTimerFinished)
 
         mActiveSoundListView = view.findViewById(R.id.active_sound_list)
         mActiveSoundListView.layoutManager = LinearLayoutManager(mContext)
@@ -76,7 +79,8 @@ class SoundControlFragment : Fragment() {
                     true
                 }
                 R.id.mi_cancel_timer -> {
-                    mListener.cancelTimer()
+                    viewModel.cancelSleepTimer()
+                    mListener.onCancelSleepTimer()
                     timeRemainingText.isVisible = false
                     cancelTimerButton.isVisible = false
                     true
@@ -89,6 +93,27 @@ class SoundControlFragment : Fragment() {
         //addSoundButton.setOnClickListener{ openAddSoundDialog(view.context) }
     }
 
+    private fun updateTimerText(remainingTimeMillis: Long?) {
+        remainingTimeMillis?.let {
+            val timerString = String.format(
+                "%02d:%02d:%02d", // HH:MM:SS
+                TimeUnit.MILLISECONDS.toHours(it), // hours
+                TimeUnit.MILLISECONDS.toMinutes(it) - // minutes
+                        TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(it)),
+                TimeUnit.MILLISECONDS.toSeconds(it) -
+                        TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(it)))
+
+            timeRemainingText.title = timerString
+        }
+    }
+
+    private fun onSleepTimerFinished(isFinished: Boolean) {
+        if (isFinished) {
+            timeRemainingText.isVisible = false
+            cancelTimerButton.isVisible = false
+        }
+    }
+
     private fun openSetTimerDialog() {
         val binding = DataBindingUtil.inflate<TimerDialogBinding>(
             LayoutInflater.from(context),
@@ -99,13 +124,14 @@ class SoundControlFragment : Fragment() {
         binding.lifecycleOwner = this
         binding.time = TimerDialogTime(0, 0)
 
-        context?.let {
-            AlertDialog.Builder(it)
+        context?.let { context ->
+            AlertDialog.Builder(context)
                 .setView(binding.root)
                 .setCancelable(true)
                 .setPositiveButton("Start") { dialog, _ ->
-                    binding.time?.let {
-                        mListener.setTimer(it.getMillis(), timeRemainingText)
+                    binding.time?.let { time ->
+                        viewModel.setSleepTimer(time.getMillis())
+                        viewModel.startSleepTimer()
                         timeRemainingText.isVisible = true
                         cancelTimerButton.isVisible = true
                     }
