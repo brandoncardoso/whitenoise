@@ -5,10 +5,13 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
-import android.content.*
+import android.content.Context
+import android.content.Intent
+import android.content.SharedPreferences
 import android.media.AudioAttributes
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
 import android.view.Menu
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -16,15 +19,18 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.bcardoso.whitenoise.R
 import com.bcardoso.whitenoise.interfaces.SoundControlInterface
+import com.bcardoso.whitenoise.services.CustomIntentService
+import com.bcardoso.whitenoise.services.CustomResultReceiver
 import com.bcardoso.whitenoise.utils.LoopMediaPlayer
 import com.bcardoso.whitenoise.viewmodels.MainViewModel
 import java.util.concurrent.TimeUnit
+
 
 data class Sound(var name: String, var id: Int, var initialVolume: Float = 0F) {
     var volume = initialVolume
 }
 
-class MainActivity : AppCompatActivity(), SoundControlInterface {
+class MainActivity : AppCompatActivity(), SoundControlInterface, CustomResultReceiver.AppReceiver {
     private lateinit var volumePrefs: SharedPreferences
     private val viewModel: MainViewModel by viewModels()
 
@@ -38,18 +44,10 @@ class MainActivity : AppCompatActivity(), SoundControlInterface {
     private val mActiveSounds = mutableListOf<Pair<Sound, LoopMediaPlayer>>()
     private lateinit var mSounds: List<Sound>
 
+    private val resultReceiver = CustomResultReceiver(Handler(), this)
+
     enum class ACTION(val id: String) {
         PLAY_TOGGLE("com.bcardoso.whitenoise.action.PLAY_TOGGLE")
-    }
-
-    private val receiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            when (intent?.action) {
-                ACTION.PLAY_TOGGLE.id -> {
-                    viewModel.togglePlaying()
-                }
-            }
-        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -86,7 +84,7 @@ class MainActivity : AppCompatActivity(), SoundControlInterface {
             )
         }
 
-        registerReceiver(receiver, IntentFilter(ACTION.PLAY_TOGGLE.id))
+        registerIntentService()
 
         mNotificationManagerCompat = NotificationManagerCompat.from(applicationContext)
         createNotificationChannel()
@@ -131,12 +129,18 @@ class MainActivity : AppCompatActivity(), SoundControlInterface {
 
     @SuppressLint("RestrictedApi")
     private fun updatePlayToggleAction(isPlaying: Boolean) {
-        val playTogglePendingIntent = PendingIntent.getBroadcast(
-            this,
+        val playToggleIntent = Intent(applicationContext, CustomIntentService::class.java).apply {
+            action = ACTION.PLAY_TOGGLE.id
+            putExtra("receiver", resultReceiver)
+        }
+
+        val playTogglePendingIntent = PendingIntent.getService(
+            applicationContext,
             System.currentTimeMillis().toInt(),
-            Intent(ACTION.PLAY_TOGGLE.id),
+            playToggleIntent,
             0
         )
+
         val playToggleAction = NotificationCompat.Action.Builder(
             if (isPlaying) R.drawable.ic_baseline_pause_24 else R.drawable.ic_baseline_play_arrow_24,
             if (isPlaying) "Pause" else "Play",
@@ -220,5 +224,25 @@ class MainActivity : AppCompatActivity(), SoundControlInterface {
     override fun onDestroy() {
         mNotificationManagerCompat.cancelAll()
         super.onDestroy()
+    }
+
+    private fun registerIntentService() {
+        val intent = Intent(applicationContext, CustomIntentService::class.java)
+        intent.putExtra("receiver", resultReceiver)
+        startService(intent)
+    }
+
+    override fun onReceiveResult(resultCode: Int, resultData: Bundle?) {
+        when (resultCode) {
+            CustomIntentService.STATUS_FINISHED -> {
+                resultData?.get("action")?.let { action ->
+                    when (action) {
+                        ACTION.PLAY_TOGGLE.id -> {
+                            viewModel.togglePlaying()
+                        }
+                    }
+                }
+            }
+        }
     }
 }
