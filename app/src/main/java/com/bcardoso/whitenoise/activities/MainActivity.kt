@@ -12,6 +12,10 @@ import android.media.AudioAttributes
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
+import android.support.v4.media.MediaMetadataCompat
+import android.support.v4.media.session.MediaControllerCompat
+import android.support.v4.media.session.MediaSessionCompat
+import android.support.v4.media.session.PlaybackStateCompat
 import android.view.Menu
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -44,10 +48,13 @@ class MainActivity : AppCompatActivity(), SoundControlInterface, CustomResultRec
     private val mActiveSounds = mutableListOf<Pair<Sound, LoopMediaPlayer>>()
     private lateinit var mSounds: List<Sound>
 
+    private lateinit var mediaSession: MediaSessionCompat
+    private lateinit var playbackStateBuilder: PlaybackStateCompat.Builder
+
     private val resultReceiver = CustomResultReceiver(Handler(), this)
 
     enum class ACTION(val id: String) {
-        PLAY_TOGGLE("com.bcardoso.whitenoise.action.PLAY_TOGGLE")
+        PLAY_PAUSE("com.bcardoso.whitenoise.action.PLAY_PAUSE")
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -83,6 +90,8 @@ class MainActivity : AppCompatActivity(), SoundControlInterface, CustomResultRec
                 )
             )
         }
+
+        configureMediaSession()
 
         registerIntentService()
 
@@ -128,27 +137,26 @@ class MainActivity : AppCompatActivity(), SoundControlInterface, CustomResultRec
     }
 
     @SuppressLint("RestrictedApi")
-    private fun updatePlayToggleAction(isPlaying: Boolean) {
-        val playToggleIntent = Intent(applicationContext, CustomIntentService::class.java).apply {
-            action = ACTION.PLAY_TOGGLE.id
+    private fun updatePlayPauseAction(isPlaying: Boolean) {
+        val playPauseIntent = Intent(applicationContext, CustomIntentService::class.java).apply {
+            action = ACTION.PLAY_PAUSE.id
             putExtra("receiver", resultReceiver)
         }
 
-        val playTogglePendingIntent = PendingIntent.getService(
+        val playPausePendingIntent = PendingIntent.getService(
             applicationContext,
             System.currentTimeMillis().toInt(),
-            playToggleIntent,
+            playPauseIntent,
             0
         )
 
-        val playToggleAction = NotificationCompat.Action.Builder(
+        val playPauseAction = NotificationCompat.Action.Builder(
             if (isPlaying) R.drawable.ic_baseline_pause_24 else R.drawable.ic_baseline_play_arrow_24,
             if (isPlaying) "Pause" else "Play",
-            playTogglePendingIntent
-        )
-            .build()
+            playPausePendingIntent
+        ).build()
 
-        notificationBuilder.mActions = arrayListOf(playToggleAction)
+        notificationBuilder.mActions = arrayListOf(playPauseAction)
     }
 
     private fun notifyNotificationManager(notificationId: Int, notification: Notification) {
@@ -169,13 +177,13 @@ class MainActivity : AppCompatActivity(), SoundControlInterface, CustomResultRec
         )
 
         return NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_baseline_play_arrow_24) // TODO app icon
             .setDefaults(NotificationCompat.DEFAULT_ALL)
             .setPriority(NotificationCompat.PRIORITY_LOW)
-            .setContentText("Whitenoise")
-            .setSmallIcon(R.drawable.ic_baseline_play_arrow_24) // TODO app icon
             .setContentIntent(notifyPendingIntent)
             .setStyle(
                 androidx.media.app.NotificationCompat.MediaStyle()
+                    .setMediaSession(mediaSession.sessionToken)
                     .setShowActionsInCompactView(0)
             )
             .setWhen(0)
@@ -191,7 +199,7 @@ class MainActivity : AppCompatActivity(), SoundControlInterface, CustomResultRec
         } else {
             pauseAllActiveSounds()
         }
-        updatePlayToggleAction(isPlaying)
+        updatePlayPauseAction(isPlaying)
         updateNotification()
     }
 
@@ -222,6 +230,7 @@ class MainActivity : AppCompatActivity(), SoundControlInterface, CustomResultRec
     }
 
     override fun onDestroy() {
+        mediaSession.release()
         mNotificationManagerCompat.cancelAll()
         super.onDestroy()
     }
@@ -237,12 +246,44 @@ class MainActivity : AppCompatActivity(), SoundControlInterface, CustomResultRec
             CustomIntentService.STATUS_FINISHED -> {
                 resultData?.get("action")?.let { action ->
                     when (action) {
-                        ACTION.PLAY_TOGGLE.id -> {
+                        ACTION.PLAY_PAUSE.id -> {
                             viewModel.togglePlaying()
                         }
                     }
                 }
             }
         }
+    }
+
+    private fun configureMediaSession() {
+        mediaSession = MediaSessionCompat(this, "whitenoise")
+
+        val initialState = if (viewModel.isPlaying.value == true)
+            PlaybackStateCompat.STATE_PLAYING else PlaybackStateCompat.STATE_PAUSED
+        playbackStateBuilder = PlaybackStateCompat.Builder()
+
+        playbackStateBuilder
+            .setActions(PlaybackStateCompat.ACTION_PLAY_PAUSE)
+            .setState(initialState, PlaybackStateCompat.PLAYBACK_POSITION_UNKNOWN, 1F)
+
+        mediaSession.setPlaybackState(playbackStateBuilder.build())
+
+        mediaSession.setCallback(object : MediaSessionCompat.Callback() {
+            override fun onPause() {
+                viewModel.pause()
+                super.onPause()
+            }
+
+            override fun onPlay() {
+                viewModel.play()
+                super.onPlay()
+            }
+        })
+
+        mediaSession.setMetadata(
+            MediaMetadataCompat.Builder()
+                .build())
+
+        mediaSession.isActive = true
     }
 }

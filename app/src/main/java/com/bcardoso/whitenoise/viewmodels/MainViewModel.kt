@@ -40,6 +40,14 @@ class MainViewModel : ViewModel() {
 
     fun cancelSleepTimer() = _sleepTimer.value?.cancel()
 
+    fun pause() {
+        _isPlaying.value = false
+    }
+
+    fun play() {
+        _isPlaying.value = true
+    }
+
     fun togglePlaying() {
         _isPlaying.value = !_isPlaying.value!!
     }
