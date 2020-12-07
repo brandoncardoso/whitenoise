@@ -5,15 +5,15 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
-import android.media.AudioAttributes
+import android.content.ServiceConnection
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
+import android.os.IBinder
 import android.support.v4.media.MediaMetadataCompat
-import android.support.v4.media.session.MediaControllerCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
 import android.view.Menu
@@ -25,17 +25,29 @@ import com.bcardoso.whitenoise.R
 import com.bcardoso.whitenoise.interfaces.SoundControlInterface
 import com.bcardoso.whitenoise.services.CustomIntentService
 import com.bcardoso.whitenoise.services.CustomResultReceiver
-import com.bcardoso.whitenoise.utils.LoopMediaPlayer
+import com.bcardoso.whitenoise.services.SoundService
 import com.bcardoso.whitenoise.viewmodels.MainViewModel
 import java.util.concurrent.TimeUnit
 
-
-data class Sound(var name: String, var id: Int, var initialVolume: Float = 0F) {
-    var volume = initialVolume
-}
-
 class MainActivity : AppCompatActivity(), SoundControlInterface, CustomResultReceiver.AppReceiver {
-    private lateinit var volumePrefs: SharedPreferences
+    private lateinit var soundService: SoundService
+    private var isBound: Boolean = false
+
+    private val connection = object : ServiceConnection {
+
+        override fun onServiceConnected(className: ComponentName, service: IBinder) {
+            val binder = service as SoundService.LocalBinder
+            soundService = binder.getService()
+            isBound = true
+
+            viewModel.setActiveSounds(soundService.getActiveSounds())
+        }
+
+        override fun onServiceDisconnected(arg0: ComponentName) {
+            isBound = false
+        }
+    }
+
     private val viewModel: MainViewModel by viewModels()
 
     private val NOTIFICATION_CHANNEL_ID = "whitenoise"
@@ -44,9 +56,6 @@ class MainActivity : AppCompatActivity(), SoundControlInterface, CustomResultRec
     private lateinit var notificationBuilder: NotificationCompat.Builder
 
     private lateinit var topAppBar: androidx.appcompat.widget.Toolbar
-
-    private val mActiveSounds = mutableListOf<Pair<Sound, LoopMediaPlayer>>()
-    private lateinit var mSounds: List<Sound>
 
     private lateinit var mediaSession: MediaSessionCompat
     private lateinit var playbackStateBuilder: PlaybackStateCompat.Builder
@@ -61,35 +70,15 @@ class MainActivity : AppCompatActivity(), SoundControlInterface, CustomResultRec
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
 
+        val intent = Intent(this, SoundService::class.java)
+        bindService(intent, connection, Context.BIND_AUTO_CREATE)
+
         viewModel.isPlaying.observe(this, ::togglePlayPause)
         viewModel.sleepTimerTimeRemaining.observe(this, ::onSleepTimerUpdate)
         viewModel.isSleepTimerFinished.observe(this, ::onSleepTimerFinished)
 
         topAppBar = findViewById(R.id.topAppBar)
         setSupportActionBar(findViewById(R.id.topAppBar))
-
-        volumePrefs = getSharedPreferences("volumes", Context.MODE_PRIVATE)
-
-        mSounds = listOf(
-            Sound("Rain", R.raw.rain, volumePrefs.getFloat("Rain", 0F)),
-            Sound("Thunder", R.raw.thunder, volumePrefs.getFloat("Thunder", 0F)),
-            Sound("Forest", R.raw.forest, volumePrefs.getFloat("Forest", 0F)),
-            Sound("Waves", R.raw.forest, volumePrefs.getFloat("Waves", 0F))
-        )
-
-        val audioAttributes = AudioAttributes.Builder()
-            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-            .setUsage(AudioAttributes.USAGE_MEDIA)
-            .build()
-
-        mSounds.forEach { sound ->
-            mActiveSounds.add(
-                Pair(
-                    sound,
-                    LoopMediaPlayer.create(this, sound.id, audioAttributes, sound.volume)
-                )
-            )
-        }
 
         configureMediaSession()
 
@@ -103,14 +92,6 @@ class MainActivity : AppCompatActivity(), SoundControlInterface, CustomResultRec
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.top_app_bar, menu)
         return true
-    }
-
-    private fun startAllActiveSounds() {
-        mActiveSounds.forEach { (_, mp) -> mp.start() }
-    }
-
-    private fun pauseAllActiveSounds() {
-        mActiveSounds.forEach { (_, mp) -> mp.pause() }
     }
 
     private fun createNotificationChannel() {
@@ -189,18 +170,16 @@ class MainActivity : AppCompatActivity(), SoundControlInterface, CustomResultRec
             .setWhen(0)
     }
 
-    override fun getActiveSounds(): MutableList<Pair<Sound, LoopMediaPlayer>> {
-        return mActiveSounds
-    }
-
     private fun togglePlayPause(isPlaying: Boolean) {
-        if (isPlaying) {
-            startAllActiveSounds()
-        } else {
-            pauseAllActiveSounds()
+        if (isBound) {
+            if (isPlaying) {
+                soundService.startAllActiveSounds()
+            } else {
+                soundService.pauseAllActiveSounds()
+            }
+            updatePlayPauseAction(isPlaying)
+            updateNotification()
         }
-        updatePlayPauseAction(isPlaying)
-        updateNotification()
     }
 
     override fun onCancelSleepTimer() {
@@ -222,8 +201,8 @@ class MainActivity : AppCompatActivity(), SoundControlInterface, CustomResultRec
     }
 
     private fun onSleepTimerFinished(isFinished: Boolean) {
-        if (isFinished) {
-            pauseAllActiveSounds()
+        if (isBound && isFinished) {
+            soundService.pauseAllActiveSounds()
             notificationBuilder.setContentText("Timer finished.")
             updateNotification()
         }
@@ -232,6 +211,7 @@ class MainActivity : AppCompatActivity(), SoundControlInterface, CustomResultRec
     override fun onDestroy() {
         mediaSession.release()
         mNotificationManagerCompat.cancelAll()
+        unbindService(connection)
         super.onDestroy()
     }
 

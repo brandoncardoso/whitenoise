@@ -18,6 +18,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <service android:name="com.bcardoso.whitenoise.services.CustomIntentService" />
+        <service android:name="com.bcardoso.whitenoise.services.SoundService" />
     </application>
 </manifest>

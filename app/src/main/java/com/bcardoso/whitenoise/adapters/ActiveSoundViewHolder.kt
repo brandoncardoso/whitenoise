@@ -9,8 +9,8 @@ import android.widget.SeekBar.OnSeekBarChangeListener
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.bcardoso.whitenoise.R
-import com.bcardoso.whitenoise.activities.Sound
 import com.bcardoso.whitenoise.utils.LoopMediaPlayer
+import com.bcardoso.whitenoise.utils.Sound
 
 class ActiveSoundViewHolder(inflater: LayoutInflater, parent: ViewGroup) :
         RecyclerView.ViewHolder(inflater.inflate(R.layout.active_sound_list_item, parent, false)) {

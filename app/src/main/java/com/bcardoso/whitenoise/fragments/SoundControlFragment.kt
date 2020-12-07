@@ -23,8 +23,6 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import java.util.concurrent.TimeUnit
 
 class SoundControlFragment : Fragment() {
-    private lateinit var mContext: Context
-
     private val viewModel: MainViewModel by activityViewModels()
 
     private lateinit var mActiveSoundListView: RecyclerView
@@ -47,7 +45,6 @@ class SoundControlFragment : Fragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
-        mContext = context
         if (context is SoundControlInterface) mListener = context
     }
 
@@ -59,9 +56,13 @@ class SoundControlFragment : Fragment() {
         viewModel.isSleepTimerFinished.observe(viewLifecycleOwner, ::onSleepTimerFinished)
 
         mActiveSoundListView = view.findViewById(R.id.active_sound_list)
-        mActiveSoundListView.layoutManager = LinearLayoutManager(mContext)
-        mActiveSoundAdapter = ActiveSoundAdapter(mListener.getActiveSounds())
+        mActiveSoundListView.layoutManager = LinearLayoutManager(context)
+        mActiveSoundAdapter = ActiveSoundAdapter()
         mActiveSoundListView.adapter = mActiveSoundAdapter
+
+        viewModel.activeSounds.observe(viewLifecycleOwner, { activeSounds ->
+            mActiveSoundAdapter.updateList(activeSounds)
+        })
 
         bottomAppBar = view.findViewById(R.id.bottomAppBar)
         cancelTimerButton = bottomAppBar.menu.findItem(R.id.mi_cancel_timer)
