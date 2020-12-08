@@ -73,7 +73,7 @@ class MainActivity : AppCompatActivity(), SoundControlInterface, CustomResultRec
         val intent = Intent(this, SoundService::class.java)
         bindService(intent, connection, Context.BIND_AUTO_CREATE)
 
-        viewModel.isPlaying.observe(this, ::togglePlayPause)
+        viewModel.isPlaying.observe(this, ::onTogglePlayPause)
         viewModel.sleepTimerTimeRemaining.observe(this, ::onSleepTimerUpdate)
         viewModel.isSleepTimerFinished.observe(this, ::onSleepTimerFinished)
 
@@ -170,12 +170,12 @@ class MainActivity : AppCompatActivity(), SoundControlInterface, CustomResultRec
             .setWhen(0)
     }
 
-    private fun togglePlayPause(isPlaying: Boolean) {
+    private fun onTogglePlayPause(isPlaying: Boolean) {
         if (isBound) {
             if (isPlaying) {
-                soundService.startAllActiveSounds()
+                soundService.play()
             } else {
-                soundService.pauseAllActiveSounds()
+                soundService.pause()
             }
             updatePlayPauseAction(isPlaying)
             updateNotification()
@@ -202,7 +202,7 @@ class MainActivity : AppCompatActivity(), SoundControlInterface, CustomResultRec
 
     private fun onSleepTimerFinished(isFinished: Boolean) {
         if (isBound && isFinished) {
-            soundService.pauseAllActiveSounds()
+            soundService.pause()
             notificationBuilder.setContentText("Timer finished.")
             updateNotification()
         }

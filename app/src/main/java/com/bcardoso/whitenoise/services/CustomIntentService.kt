@@ -27,7 +27,7 @@ class CustomIntentService : IntentService("CustomIntentService") {
         intent?.let {
             val receiver = it.getParcelableExtra<ResultReceiver>("receiver")
             val b = Bundle()
-            b.putString("action", intent?.action)
+            b.putString("action", intent.action)
             receiver?.send(STATUS_FINISHED, b)
         }
     }

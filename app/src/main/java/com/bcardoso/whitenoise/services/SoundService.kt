@@ -14,6 +14,8 @@ import com.bcardoso.whitenoise.utils.Sound
 class SoundService : Service() {
     private val binder = LocalBinder()
 
+    private var isPlaying = false
+
     private lateinit var volumePrefs: SharedPreferences
     private lateinit var sounds: List<Sound>
     private val audioAttributes: AudioAttributes = AudioAttributes.Builder()
@@ -48,18 +50,23 @@ class SoundService : Service() {
         return START_STICKY
     }
 
-    fun startAllActiveSounds() {
-        activeSounds.forEach { (_, mp) -> mp.start() }
+    fun play() {
+        if (!isPlaying) {
+            isPlaying = true
+            activeSounds.forEach { (_, mp) -> mp.start() }
+        }
     }
 
-    fun pauseAllActiveSounds() {
-        activeSounds.forEach { (_, mp) -> mp.pause() }
+    fun pause() {
+        if (isPlaying) {
+            isPlaying = false
+            activeSounds.forEach { (_, mp) -> mp.pause() }
+        }
     }
 
     fun getActiveSounds(): MutableList<Pair<Sound, LoopMediaPlayer>> {
         return activeSounds
     }
-
 
     inner class LocalBinder : Binder() {
         fun getService(): SoundService {
