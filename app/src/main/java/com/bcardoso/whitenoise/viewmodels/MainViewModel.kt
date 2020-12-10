@@ -42,6 +42,10 @@ class MainViewModel : ViewModel() {
         }
     }
 
+    fun setIsPlaying(isPlaying : Boolean) {
+        _isPlaying.value = isPlaying
+    }
+
     fun setActiveSounds(sounds: MutableList<Pair<Sound, LoopMediaPlayer>>) {
         _activeSounds.value = sounds
     }

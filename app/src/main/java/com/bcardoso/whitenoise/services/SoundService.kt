@@ -12,16 +12,17 @@ import android.os.IBinder
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import android.support.v4.media.session.PlaybackStateCompat
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.bcardoso.whitenoise.R
 import com.bcardoso.whitenoise.activities.MainActivity
+import com.bcardoso.whitenoise.interfaces.SoundServiceCallbacks
 import com.bcardoso.whitenoise.utils.LoopMediaPlayer
 import com.bcardoso.whitenoise.utils.Sound
 
 class SoundService : Service() {
     private val binder = LocalBinder()
+    private lateinit var serviceCallbacks: SoundServiceCallbacks
 
     private var isPlaying = false
 
@@ -85,12 +86,19 @@ class SoundService : Service() {
         super.onDestroy()
     }
 
+    fun setCallbacks(callbacks: SoundServiceCallbacks) {
+        serviceCallbacks = callbacks
+    }
+
+    fun isPlaying() = isPlaying
+
     fun togglePlayPause() {
         if (isPlaying) {
             pause()
         } else {
             play()
         }
+        serviceCallbacks?.onTogglePlayPause(isPlaying)
     }
 
     fun play() {
